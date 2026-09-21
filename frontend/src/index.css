@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  /* ── Font ── */
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Brand – Azure ── */
+  --color-brand-50:  #EFF6FF;
+  --color-brand-100: #DBEAFE;
+  --color-brand-200: #BFDBFE;
+  --color-brand-300: #93C5FD;
+  --color-brand-400: #60A5FA;
+  --color-brand-500: #3B82F6;
+  --color-brand-600: #2563EB;
+  --color-brand-700: #1D4ED8;
+  --color-brand-800: #1E40AF;
+  --color-brand-900: #1E3A8A;
+
+  /* ── Page & Surface ── */
+  --color-page:         #F8FAFC;
+  --color-surface:      #FFFFFF;
+  --color-surface-alt:  #F1F5F9;
+  --color-surface-raised: #FFFFFF;
+
+  /* ── Text ── */
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted:     #64748B;
+  --color-text-disabled:  #CBD5E1;
+  --color-text-inverse:   #FFFFFF;
+
+  /* ── Border / Divider ── */
+  --color-border:        #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-divider:       #F1F5F9;
+
+  /* ── Semantic – Success ── */
+  --color-success:        #16A34A;
+  --color-success-hover:  #15803D;
+  --color-success-subtle: #F0FDF4;
+  --color-success-border: #BBF7D0;
+  --color-success-text:   #166534;
+
+  /* ── Semantic – Warning ── */
+  --color-warning:        #D97706;
+  --color-warning-hover:  #B45309;
+  --color-warning-subtle: #FFFBEB;
+  --color-warning-border: #FDE68A;
+  --color-warning-text:   #92400E;
+
+  /* ── Semantic – Error ── */
+  --color-error:        #DC2626;
+  --color-error-hover:  #B91C1C;
+  --color-error-subtle: #FEF2F2;
+  --color-error-border: #FECACA;
+  --color-error-text:   #991B1B;
+
+  /* ── Semantic – Info ── */
+  --color-info:        #0284C7;
+  --color-info-hover:  #0369A1;
+  --color-info-subtle: #F0F9FF;
+  --color-info-border: #BAE6FD;
+  --color-info-text:   #0C4A6E;
+
+  /* ── Semantic – Neutral / Draft ── */
+  --color-neutral:        #64748B;
+  --color-neutral-subtle: #F8FAFC;
+  --color-neutral-border: #E2E8F0;
+  --color-neutral-text:   #475569;
+
+  /* ── Radius ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── Shadow ── */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.10), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl: 0 16px 48px -8px rgb(0 0 0 / 0.12), 0 8px 16px -8px rgb(0 0 0 / 0.08);
+}
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-page);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+/* ── Scrollbars ── */
+* { scrollbar-width: thin; scrollbar-color: #E2E8F0 transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 9999px; }
+*::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+
+/* ── Focus ring ── */
+:focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
+
+/* ── Typography scale ── */
+.text-display {
+  font-size: 2.25rem;   /* 36px */
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.text-h1 {
+  font-size: 1.875rem;  /* 30px */
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.text-h2 {
+  font-size: 1.5rem;    /* 24px */
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.text-h3 {
+  font-size: 1.25rem;   /* 20px */
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.text-body {
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.6;
+  font-weight: 400;
+}
+.text-body-sm {
+  font-size: 0.875rem;  /* 14px */
+  line-height: 1.55;
+  font-weight: 400;
+}
+.text-small {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.5;
+  font-weight: 400;
+}
+.text-caption {
+  font-size: 0.75rem;   /* 12px */
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.text-label {
+  font-size: 0.75rem;   /* 12px */
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.text-overline {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Sidebar transition ── */
+.sidebar-transition { transition: width 200ms ease, transform 200ms ease; }
+
+/* ── Modal / Drawer backdrop ── */
+.backdrop-enter { opacity: 0; }
+.backdrop-enter-active { opacity: 1; transition: opacity 150ms ease; }
+.backdrop-exit { opacity: 1; }
+.backdrop-exit-active { opacity: 0; transition: opacity 150ms ease; }

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.coverage
+
+# Node / frontend
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Environment & secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+logs/
+*.log
