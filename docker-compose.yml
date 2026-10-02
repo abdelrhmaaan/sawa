@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16
+    container_name: sawa-db
+    environment:
+      POSTGRES_USER: sawa
+      POSTGRES_PASSWORD: sawa
+      POSTGRES_DB: sawa
+    ports:
+      - "5434:5432"
+    volumes:
+      - sawa-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sawa -d sawa"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  sawa-pgdata:

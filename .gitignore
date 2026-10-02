@@ -8,6 +8,8 @@ htmlcov/
 .pytest_cache/
 coverage.xml
 *.coverage
+*.sqlite3
+backend/staticfiles/
 
 # Node / frontend
 node_modules/
