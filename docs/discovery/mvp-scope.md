@@ -17,7 +17,7 @@
    - HR sees everything
 
 3. **Employee Requests**
-   - Create requests with type, title, description, and optional attachment
+   - Create requests with type, title, and description (no attachments — see Out of Scope)
    - Request types: Leave, Equipment, Work-from-Home, HR Service, General
    - Submit, track status, and view activity history
    - Edit draft requests before submission
@@ -47,7 +47,7 @@
 8. **Search & Filters**
    - Filter requests by type, status, date range, employee
    - Filter timesheets by status, date range, employee
-   - Sort by date, status, priority
+   - Sort by date and status
    - Pagination for large result sets
 
 9. **Notifications (In-App)**

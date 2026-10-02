@@ -20,7 +20,7 @@ The product replaces fragmented channels — email, WhatsApp, paper, scattered E
 
 > **"Every request. Every hour. Together."**
 
-Short form (product UI, loading screens): **"Work, together."**
+Short form (product UI, loading screens): **"Work better together."**
 
 ## 3. Logo
 

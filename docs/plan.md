@@ -2,18 +2,72 @@
 
 **Project:** Employee Requests & Time Tracking System
 **Deadline:** 5 October 2026 (final demo & judging)
-**Plan written:** 21 September 2026
-**Stack:** Django + DRF + PostgreSQL (backend) · React 19 + TypeScript + Vite + Tailwind v4 (frontend)
+**Plan written:** 21 September 2026 · **Reviewed & re-planned:** 2 October 2026
+**Stack:** Django 5.2 LTS + DRF + PostgreSQL (backend) · React 19 + TypeScript + Vite + Tailwind v4 (frontend)
 
 ---
 
-## 1. Current State (as of 21 Sep)
+## 0. Plan Review – 2 Oct (READ FIRST)
+
+### 0.1 Reality check
+
+| Planned for | What exists on 2 Oct |
+|---|---|
+| Specs done 21 Sep | `specs/00x-*/` folders hold only `.gitkeep`. Constitution exists (`.specify/memory/constitution.md`) |
+| Tech design 22–23 Sep | No `architecture.md`, `database.md`, `api.md` |
+| Implementation 24–29 Sep | `backend/` is empty. Frontend has only `DesignSystem.tsx` page; no router, no API client |
+| Hello-world deploy 25 Sep | Not done |
+| Git | 1 commit. Uncommitted: `docs/brand.md`, `docs/plan.md`, `specs/constitution.md`; untracked `.specify/`, `.devin/` |
+
+**~3 working days left. The original Stage 5–11 dates are void. Follow §0.4 (Rescue Schedule).**
+
+### 0.2 Issues found in the plan / discovery docs (and decisions)
+
+| # | Issue | Decision |
+|---|---|---|
+| 1 | `mvp-scope.md` lists "optional attachment" but also puts file upload **out of scope** | No attachments. Remove from MVP scope line |
+| 2 | "Sort by priority" but no `priority` field on `Request` | Drop priority. Sort by date / status only |
+| 3 | `RequestType` as an HR-configurable model costs CRUD + UI | Use `TextChoices`: Leave, Equipment, WFH, HR Service, General |
+| 4 | `User` + separate `EmployeeProfile` = extra join, extra serializer | Put `role`, `department`, `manager` (FK self) directly on custom `User` |
+| 5 | "Employee → Manager → HR if needed" two-step flow never defined | Single-step approval. Approver = direct manager, or HR if user has no manager. HR can act on any request |
+| 6 | No rule on self-approval | Nobody approves/reviews their own request or timesheet (HR included) |
+| 7 | Request state machine: unclear if `returned` is editable | `returned` behaves like `draft`: owner can edit, then submit again. `approved` / `rejected` are final |
+| 8 | 403 vs 404 not separated | Object outside caller's scope → **404**. In scope but wrong role (e.g. employee calls `approve`) → **403**. Wrong state (edit submitted item) → **400** |
+| 9 | Timesheet unit unclear (entry vs week) | Status per **entry**, plus a bulk `submit` action for many draft entries. No weekly header model |
+| 10 | No timesheet validation rules | `end_time > start_time`; `hours` computed server-side; date not in the future; no overlapping entries for same owner/date |
+| 11 | Seed data "3 demo users" cannot demo "other manager's team" attack | Seed: 1 HR, 2 managers, 4 employees (2 per manager), sample requests + entries |
+| 12 | Machine has Python 3.10; Django 6 needs 3.12 | Pin **Django 5.2 LTS** |
+| 13 | Frontend has no `react-router` | Add `react-router` (one dependency). Use native `fetch` wrapper — no axios / react-query |
+| 14 | JWT storage not decided | Access token in memory, refresh token in `localStorage`. Document trade-off in `architecture.md` |
+| 15 | Local PostgreSQL setup not planned | `docker-compose.yml` with `postgres:16` for dev; settings read `DATABASE_URL` |
+| 16 | Two constitution files | Keep `.specify/memory/constitution.md` canonical; `specs/constitution.md` is only a pointer (already done) |
+
+### 0.3 Revised cut list
+
+| Keep (must) | Reduce | Cut |
+|---|---|---|
+| Auth, RBAC, Requests, Timesheets, attack tests, filters + pagination, OpenAPI, deploy, README, ai-usage | Dashboards → one `/api/dashboard/` summary endpoint per role + `StatCard`s. Notifications → only if Day 3 is on time (model + signal + bell list) | Reports page, CSV export, HR employee edit UI (use Django admin for HR user management) |
+
+### 0.4 Rescue Schedule (2–5 Oct)
+
+| When | Work | Done when |
+|---|---|---|
+| **Fri 2 Oct – evening** | Commit pending changes. Write `specs/002`, `003`, `004` (spec/plan/tasks, compact, with `T-00x-nn` IDs); `001` + `005` one page each. Write `docs/database.md` + `docs/api.md` (permission matrix) — these replace Stage 6. Start `docs/ai-usage.md` | Specs + matrix committed |
+| **Sat 3 Oct** | Backend: project + `docker-compose` + `.env`, custom `User`, JWT, `/api/me`, Requests (CRUD + submit/approve/reject/return + history), Timesheets (CRUD + submit/approve/return), `django-filter` + pagination, `drf-spectacular`, seed command, attack tests. **Deploy backend + DB tonight** | `pytest` green, Swagger live on public URL |
+| **Sun 4 Oct** | Frontend: router, auth context, API client, login, my requests (list/form/detail+timeline), approvals queue, my timesheets (list/form/submit), manager review, dashboard summary. Loading/empty/error states. Deploy frontend, CORS. Notifications only if done by 18:00 | Full demo flow works on live URL |
+| **Mon 5 Oct – morning** | Feature freeze. README, `architecture.md`, finish `ai-usage.md`, evidence table (spec ↔ commit ↔ test), responsive check 375/768/1280, rehearse demo once | Rehearsed on live URL |
+
+Rule: if Saturday's backend slips, Sunday cuts dashboards first, then the manager-review screen for timesheets (keep its API + tests).
+
+---
+
+## 1. Current State (as of 21 Sep — historical, see §0)
 
 | Area | Status | Notes |
 |---|---|---|
-| Stage 0 – Repo Setup | Partial | `sawa/` repo created: `frontend/` (cleaned Figma export, builds), `backend/` (empty), `docs/`, `specs/` (empty folders) |
+| Stage 0 – Repo Setup | Done | `sawa/` repo committed (`2404723`): `frontend/` cleaned + builds, `backend/` empty, `docs/`, `specs/` scaffolded |
 | Stage 1 – Discovery & Scope | Done | `docs/discovery/` (problem, personas, goals, MVP scope) |
-| Stage 2 – Naming & Branding | Partial | Name "SAWA" exists. Palette exists in `index.css`. Missing: tagline, logo, typography doc, brand rules |
+| Stage 2 – Naming & Branding | Done | `docs/brand.md` + `docs/brand/*.svg` — name, tagline, palette, typography, rules |
 | Stage 3 – Product Definition | Partial | Roles and MVP scope written. Missing: user stories, permission matrix |
 | Stage 4 – UX & UI Design | Done | Figma Make export: design system (32 components), app shell, tokens. Pages are placeholders |
 | Stage 5 – SpecKit | Not started | `constitution.md` drafted; feature spec/plan/tasks files pending |
@@ -72,9 +126,9 @@ Task IDs follow `T-<feature>-<n>` (e.g. `T-003-04`) and must appear in commit me
 - [x] Create `sawa/` repo with the layout above
 - [x] Move Figma export into `frontend/`, strip Figma-only code, confirm `npm install && npm run build` works
 - [x] Move `docs/discovery/` into repo
-- [x] Add root `.gitignore` (Python, Node, `.env`) — git `init` + first commit pending review
-- [ ] Write `docs/brand.md`: name meaning, tagline, palette (from `index.css`), typography (EN + AR), 3–5 personality attributes, usage rules
-- [ ] Add logo (primary, icon, light, dark) to `docs/brand/` – simple SVG is enough
+- [x] Add root `.gitignore` (Python, Node, `.env`), `git init` + first commit `2404723` on `master`
+- [x] Write `docs/brand.md`: name meaning, tagline, palette (from `index.css`), typography (EN + AR), personality attributes, usage rules
+- [x] Add logo to `docs/brand/`: `icon.svg`, `logo.svg`, `logo-dark.svg`, `logo-mono.svg`
 
 **Outcome:** One repo, frontend runs, brand package complete (Stage 2 closed).
 
@@ -98,17 +152,16 @@ Task IDs follow `T-<feature>-<n>` (e.g. `T-003-04`) and must appear in commit me
 
 - [ ] `docs/architecture.md` – diagram: browser → React → REST → Django → PostgreSQL; hosting plan
 - [ ] `docs/database.md` – ERD + model list:
-  - `User` (custom, email login)
-  - `EmployeeProfile` (user, role, department, `manager` FK → self, is_active)
-  - `RequestType` (name, active – HR configurable)
-  - `Request` (type, title, description, status, owner, created/updated)
+  - `User` (custom, email login, `role`, `department`, `manager` FK → self, is_active) — *revised 2 Oct, replaces `EmployeeProfile`*
+  - `Request` (type as `TextChoices`, title, description, status, owner, created/updated) — *`RequestType` model dropped 2 Oct*
   - `RequestStatusHistory` (request, actor, from_status, to_status, comment, timestamp)
-  - `TimesheetEntry` (owner, date, start_time, end_time, hours, note, status)
-  - `TimesheetReview` or status history for entries (actor, action, comment, timestamp)
-  - `Notification` (user, message, link, is_read, created)
+  - `TimesheetEntry` (owner, date, start_time, end_time, hours (computed), note, status)
+  - `TimesheetStatusHistory` (entry, actor, from_status, to_status, comment, timestamp)
+  - `Notification` (user, message, link, is_read, created) — *optional, see §0.3*
 - [ ] State machines:
-  - Request: `draft → submitted → approved | rejected | returned → submitted …`
-  - Timesheet: `draft → submitted → approved | returned → submitted …`
+  - Request: `draft → submitted → approved | rejected | returned`; `returned` is editable like `draft` → `submitted …`
+  - Timesheet: `draft → submitted → approved | returned`; `returned` is editable → `submitted …`
+  - Approver: direct manager; HR if owner has no manager; HR may act on any; never self
 - [ ] `docs/api.md` – endpoint list + permission matrix (rows = endpoints, columns = Employee / Manager / HR)
 - [ ] Security design: ownership checks via `get_queryset()`, 404 for out-of-scope objects, input validation in serializers, secrets in `.env`
 
@@ -116,7 +169,7 @@ Task IDs follow `T-<feature>-<n>` (e.g. `T-003-04`) and must appear in commit me
 
 ---
 
-### Stage 7 – Implementation · 24–29 Sep (24 pts: backend 12 + frontend 12)
+### Stage 7 – Implementation · ~~24–29 Sep~~ → 3–4 Oct, see §0.4 (24 pts: backend 12 + frontend 12)
 
 One vertical slice per day: API → screen → test.
 
@@ -227,6 +280,8 @@ Rules for myself:
 | Risk | Mitigation |
 |---|---|
 | Slices take longer than one day | Cut reports → notifications first. Keep auth, RBAC, requests, timesheets |
-| Deployment problems on 3 Oct | Deploy a "hello world" Django + React on 25 Sep already; redeploy daily after |
+| Deployment problems on 3 Oct | ~~Deploy on 25 Sep~~ (missed). Deploy backend on Sat 3 Oct evening, frontend Sun 4 Oct; never leave first deploy to Monday |
+| Lost 11 days (found 2 Oct) | Rescue schedule §0.4 + cut list §0.3. Use Django admin for HR user management instead of custom UI |
+| Spec writing eats Friday | Keep specs compact: stories + acceptance criteria + task IDs. Do not polish `001` / `005` |
 | Frontend polish eats backend time | Frontend UI kit is done; only wire pages. Do not redesign components |
 | Losing traceability | Task ID in every commit message from day one |
