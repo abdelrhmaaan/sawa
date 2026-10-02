@@ -104,3 +104,48 @@ def obtain_tokens(client, email, password):
     return client.post(
         "/api/auth/token/", {"email": email, "password": password}, format="json"
     )
+
+
+@pytest.fixture
+def make_request(db):
+    from employee_requests.models import Request
+
+    def _make(owner, status=Request.Status.DRAFT, **kw):
+        from employee_requests.models import RequestStatusHistory
+
+        kw.setdefault("type", Request.Type.GENERAL)
+        kw.setdefault("title", f"req-{Request.objects.count()}")
+        kw.setdefault("description", "test request")
+        obj = Request.objects.create(owner=owner, status=status, **kw)
+        RequestStatusHistory.objects.create(
+            request=obj, actor=owner, from_status=None, to_status="draft"
+        )
+        return obj
+
+    return _make
+
+
+@pytest.fixture
+def make_entry(db):
+    import datetime
+
+    from django.utils import timezone
+
+    from timesheets.models import TimesheetEntry
+
+    def _make(owner, status=TimesheetEntry.Status.DRAFT, date=None,
+              start=datetime.time(9, 0), end=datetime.time(17, 0), **kw):
+        from timesheets.models import TimesheetStatusHistory
+
+        if date is None:
+            date = timezone.localdate() - datetime.timedelta(days=1)
+        obj = TimesheetEntry.objects.create(
+            owner=owner, status=status, date=date,
+            start_time=start, end_time=end, **kw
+        )
+        TimesheetStatusHistory.objects.create(
+            entry=obj, actor=owner, from_status=None, to_status="draft"
+        )
+        return obj
+
+    return _make

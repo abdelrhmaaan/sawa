@@ -10,9 +10,13 @@ from accounts.serializers import (
     EmailTokenObtainPairSerializer,
 )
 from accounts.views import MeView, UserViewSet
+from employee_requests.urls import router as requests_router
+from timesheets.urls import router as timesheets_router
 
 router = DefaultRouter()
 router.register("users", UserViewSet, basename="user")
+router.registry.extend(requests_router.registry)
+router.registry.extend(timesheets_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

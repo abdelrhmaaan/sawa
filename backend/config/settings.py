@@ -128,4 +128,9 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Employee Requests & Time Tracking API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "RequestTypeEnum": "employee_requests.models.Request.Type",
+        "RequestStatusEnum": "employee_requests.models.Request.Status",
+        "TimesheetStatusEnum": "timesheets.models.TimesheetEntry.Status",
+    },
 }

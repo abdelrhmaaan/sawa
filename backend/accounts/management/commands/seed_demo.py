@@ -1,7 +1,10 @@
+import datetime
+
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 from accounts.models import User
 
@@ -70,7 +73,114 @@ class Command(BaseCommand):
         return user
 
     def _seed_requests(self, password):
-        """Populated by feature 003 (sample requests in varied statuses)."""
+        """Sample requests in varied statuses (idempotent on owner+title)."""
+        from employee_requests.models import Request, RequestStatusHistory
+
+        # (owner_local, type, title, description, target_status, comment)
+        rows = [
+            ("sara", "leave", "Eid leave", "Three days off for Eid.", "approved", "Enjoy!"),
+            ("sara", "equipment", "New monitor", "Second monitor for home setup.", "submitted", ""),
+            ("sara", "wfh", "WFH Fridays", "Prefer remote on Fridays.", "draft", ""),
+            ("karim", "general", "Parking pass", "Need a parking permit.", "rejected", "Lot is full."),
+            ("karim", "hr_service", "Salary certificate", "For bank loan.", "returned", "Add bank name."),
+            ("mona", "leave", "August vacation", "One week in August.", "submitted", ""),
+            ("tarek", "equipment", "Keyboard", "Ergonomic keyboard.", "approved", ""),
+            ("hr", "general", "Team outing budget", "Q4 team event.", "draft", ""),
+        ]
+        users = {u.email: u for u in User.objects.filter(email__endswith="@" + DEMO_DOMAIN)}
+        for local, rtype, title, desc, status, comment in rows:
+            owner = users[f"{local}@{DEMO_DOMAIN}"]
+            req, created = Request.objects.get_or_create(
+                owner=owner, title=title, defaults={"type": rtype, "description": desc}
+            )
+            if not created:
+                continue
+            self._apply_request_path(req, status, comment)
+
+    def _apply_request_path(self, req, status, comment):
+        """Replay the transition chain so history matches the final status."""
+        from employee_requests.models import RequestStatusHistory as H
+
+        def hist(actor, frm, to, c=""):
+            H.objects.create(request=req, actor=actor, from_status=frm, to_status=to, comment=c)
+
+        now = timezone.now()
+        hist(req.owner, None, "draft")
+        if status == "draft":
+            return
+        decider = req.owner.manager or User.objects.filter(role="hr").exclude(pk=req.owner.pk).first()
+        req.status = "submitted"
+        req.submitted_at = now
+        hist(req.owner, "draft", "submitted")
+        if status == "submitted":
+            req.save()
+            return
+        if status == "returned":
+            req.status = "returned"
+            req.decided_at = now
+            req.save()
+            hist(decider, "submitted", "returned", comment)
+            return
+        req.status = status  # approved | rejected
+        req.decided_at = now
+        req.save()
+        hist(decider, "submitted", status, comment)
 
     def _seed_timesheets(self, password):
-        """Populated by feature 004 (a week of entries in varied statuses)."""
+        """A week of non-overlapping entries per employee in varied statuses."""
+        from timesheets.models import TimesheetEntry, TimesheetStatusHistory
+
+        today = timezone.localdate()
+        monday = today - datetime.timedelta(days=today.weekday() + 7)  # last week
+        # (day offset, start, end, status, note)
+        template = [
+            (0, "09:00", "17:00", "approved", "Feature work"),
+            (1, "09:00", "17:30", "approved", "Feature work"),
+            (2, "09:00", "13:00", "submitted", "Half day"),
+            (3, "09:00", "17:00", "submitted", ""),
+            (4, "10:00", "16:00", "returned", "Clarify tasks"),
+            (4, "16:30", "18:00", "draft", "Overtime"),
+        ]
+        users = User.objects.filter(
+            email__in=[f"{l}@{DEMO_DOMAIN}" for l in ("sara", "karim", "mona", "tarek")]
+        )
+        for owner in users:
+            for offset, start, end, status, note in template:
+                day = monday + datetime.timedelta(days=offset)
+                st = datetime.time(*map(int, start.split(":")))
+                et = datetime.time(*map(int, end.split(":")))
+                entry, created = TimesheetEntry.objects.get_or_create(
+                    owner=owner, date=day, start_time=st,
+                    defaults={"end_time": et, "note": note},
+                )
+                if not created:
+                    continue
+                self._apply_entry_path(entry, status)
+
+    def _apply_entry_path(self, entry, status):
+        from timesheets.models import TimesheetStatusHistory as H
+
+        def hist(actor, frm, to, c=""):
+            H.objects.create(entry=entry, actor=actor, from_status=frm, to_status=to, comment=c)
+
+        now = timezone.now()
+        hist(entry.owner, None, "draft")
+        if status == "draft":
+            return
+        decider = entry.owner.manager or User.objects.filter(role="hr").exclude(pk=entry.owner.pk).first()
+        entry.status = "submitted"
+        entry.submitted_at = now
+        hist(entry.owner, "draft", "submitted")
+        if status == "submitted":
+            entry.save()
+            return
+        if status == "returned":
+            entry.status = "returned"
+            entry.reviewed_at = now
+            entry.save()
+            hist(decider, "submitted", "returned", "Please add detail.")
+            return
+        entry.status = status  # approved
+        entry.reviewed_at = now
+        entry.save()
+        hist(decider, "submitted", status)
