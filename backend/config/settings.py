@@ -10,6 +10,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
     CORS_ALLOWED_ORIGINS=(list, []),
+    CSRF_TRUSTED_ORIGINS=(list, []),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -18,9 +19,15 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
 if not DEBUG and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS must be set when DEBUG=False")
+
+# Trust the proxy's HTTPS header (Render/Fly/etc. terminate TLS upstream).
+SECURE_PROXY_SSL_HEADER = env(
+    "SECURE_PROXY_SSL_HEADER", default=None, cast=lambda v: (v, "https")
+)
 
 SEED_DEMO_PASSWORD = env("SEED_DEMO_PASSWORD", default=None)
 
