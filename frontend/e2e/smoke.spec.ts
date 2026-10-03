@@ -277,9 +277,8 @@ test("logout lands on /login and protected routes redirect there", async ({
 }) => {
   await login(page, SARA);
   await page.locator("aside").getByRole("button", { name: /Employee/ }).click();
-  // The menu opens below the sidebar-bottom trigger, past the viewport edge
-  // (the page doesn't scroll), so dispatch the click instead of hit-testing.
-  await page.getByRole("button", { name: "Sign out" }).dispatchEvent("click");
+  // The menu flips above the sidebar-bottom trigger (viewport edge fix).
+  await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await expect(
     page.getByRole("heading", { name: "Sign in" })

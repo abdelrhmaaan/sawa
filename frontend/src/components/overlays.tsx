@@ -4,6 +4,7 @@ import {
   useCallback,
   useReducer,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -373,25 +374,35 @@ export function Dropdown({ trigger, items, onSelect, align = "right" }: Dropdown
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<{ top: number; left?: number; right?: number }>({ top: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const updatePosition = () => {
-    if (!triggerRef.current) return;
+  // Position before paint: open below the trigger, flip above when the
+  // menu would overflow the viewport bottom (e.g. sidebar user menu).
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current || !menuRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
+    const menuH = menuRef.current.offsetHeight;
+    const gap = 6;
+    const fitsBelow = rect.bottom + gap + menuH <= window.innerHeight;
+    const top = fitsBelow
+      ? rect.bottom + gap
+      : Math.max(gap, rect.top - gap - menuH);
     setMenuStyle({
-      top: rect.bottom + window.scrollY + 6,
+      top,
       ...(align === "right"
-        ? { right: viewportWidth - rect.right }
-        : { left: rect.left + window.scrollX }),
+        ? { right: window.innerWidth - rect.right }
+        : { left: rect.left }),
     });
-  };
+  }, [open, align]);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      const outside =
+        !triggerRef.current?.contains(target) &&
+        !menuRef.current?.contains(target);
+      if (outside) setOpen(false);
     };
     const escHandler = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("mousedown", handler);
@@ -404,9 +415,10 @@ export function Dropdown({ trigger, items, onSelect, align = "right" }: Dropdown
 
   return (
     <div ref={triggerRef} className="relative inline-block">
-      <div onClick={() => { updatePosition(); setOpen((v) => !v); }}>{trigger}</div>
+      <div onClick={() => setOpen((v) => !v)}>{trigger}</div>
       {open && createPortal(
         <div
+          ref={menuRef}
           className="fixed z-[55] min-w-[160px] bg-white border border-border rounded-xl shadow-lg py-1 overflow-hidden"
           style={menuStyle}
         >
