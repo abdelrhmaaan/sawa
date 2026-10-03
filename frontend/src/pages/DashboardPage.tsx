@@ -136,7 +136,7 @@ export default function DashboardPage() {
         <Button size="sm" iconLeft={<Plus size={14} />} onClick={() => navigate("/requests/new")}>
           New request
         </Button>
-        <Button size="sm" variant="secondary" iconLeft={<Clock size={14} />} onClick={() => navigate("/timesheets/new")}>
+        <Button size="sm" variant="secondary" iconLeft={<Clock size={14} />} onClick={() => navigate("/timesheets?new=1")}>
           Log time
         </Button>
         {isApprover && (

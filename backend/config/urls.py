@@ -10,12 +10,13 @@ from accounts.serializers import (
     EmailTokenObtainPairSerializer,
 )
 from accounts.views import MeView, UserViewSet
-from core.views import DashboardView
+from core.views import DashboardView, NotificationViewSet
 from employee_requests.urls import router as requests_router
 from timesheets.urls import router as timesheets_router
 
 router = DefaultRouter()
 router.register("users", UserViewSet, basename="user")
+router.register("notifications", NotificationViewSet, basename="notification")
 router.registry.extend(requests_router.registry)
 router.registry.extend(timesheets_router.registry)
 

@@ -41,6 +41,36 @@ def pending_for(qs, user):
     return qs.none()
 
 
+def notify(user, message, link=""):
+    """Create a Notification for `user` (spec 005 US2).
+
+    Intended to be called inside the same transaction as the transition
+    that triggered it. No-op for a missing recipient.
+    """
+    if user is None:
+        return None
+    from core.models import Notification
+
+    return Notification.objects.create(
+        user=user, message=message[:300], link=link or ""
+    )
+
+
+def submission_recipients(owner):
+    """Who is told when `owner` submits an item for approval:
+    the direct manager, or all active HR users when there is none
+    (never the owner themself)."""
+    if owner.manager_id and owner.manager_id != owner.pk:
+        return [owner.manager]
+    from django.contrib.auth import get_user_model
+
+    return list(
+        get_user_model()
+        .objects.filter(role="hr", is_active=True)
+        .exclude(pk=owner.pk)
+    )
+
+
 def transition(
     obj,
     *,

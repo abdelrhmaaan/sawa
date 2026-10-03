@@ -11,6 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MODAL
@@ -291,6 +292,60 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         document.body
       )}
     </ToastContext.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIRM DIALOG (small Modal for destructive/confirmable actions)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ConfirmDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+  loading?: boolean;
+}
+
+export function ConfirmDialog({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  destructive,
+  loading,
+}: ConfirmDialogProps) {
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <Button variant="tertiary" size="sm" onClick={onClose} disabled={loading}>
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={destructive ? "destructive" : "primary"}
+            size="sm"
+            onClick={onConfirm}
+            loading={loading}
+          >
+            {confirmLabel}
+          </Button>
+        </>
+      }
+    >
+      {description && <p className="text-body-sm text-text-secondary">{description}</p>}
+    </Modal>
   );
 }
 

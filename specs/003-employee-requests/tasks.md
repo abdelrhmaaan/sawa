@@ -13,7 +13,7 @@
 ## Phase 1: Setup (Shared Infrastructure)
 
 - [x] T-003-01 Create `backend/employee_requests/` app (models, serializers, views, filters, urls, tests package) and register it in `INSTALLED_APPS` in `backend/config/settings.py`
-- [ ] T-003-02 [P] Add requests API helpers to `frontend/src/lib/api.ts` (list/create/get/update/submit/decide calls typed against the endpoints in plan.md)
+- [x] T-003-02 [P] Add requests API helpers to `frontend/src/lib/api.ts` (list/create/get/update/submit/decide calls typed against the endpoints in plan.md)
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
@@ -44,9 +44,9 @@
 - [x] T-003-11 [US1] `RequestSerializer` in `backend/employee_requests/serializers.py`: `owner`, `status`, `submitted_at`, `decided_at`, timestamps read-only; validate `title` ≤200 non-empty, `description` required, `type` in choices
 - [x] T-003-12 [US1] `RequestViewSet` in `backend/employee_requests/views.py` + `backend/employee_requests/urls.py` router mounted under `/api/` in `backend/config/urls.py`: scoped `get_queryset()`; `perform_create` sets owner + writes create history row; update restricted to owner + draft/returned (else 400; visible non-owner → 403); destroy owner + draft only
 - [x] T-003-13 [US1] `submit` `@action` in `backend/employee_requests/views.py`: owner only (visible non-owner → 403), `draft|returned`→`submitted`, sets `submitted_at`, writes history — one transaction; wrong state → 400
-- [ ] T-003-14 [US1] `frontend/src/pages/RequestsPage.tsx`: my requests list (type, title, status badge, created date), pagination controls; loading/empty/error states
-- [ ] T-003-15 [P] [US1] `frontend/src/pages/RequestFormPage.tsx`: create/edit form (type select, title ≤200, description textarea) — edit route only offered for draft/returned
-- [ ] T-003-16 [US1] `frontend/src/pages/RequestDetailPage.tsx`: detail + owner affordances (edit/delete draft, submit); delete uses a confirm dialog from `overlays.tsx`; wire routes in `App.tsx` + nav in `shell/Shell.tsx`
+- [x] T-003-14 [US1] `frontend/src/pages/RequestsPage.tsx`: my requests list (type, title, status badge, created date), pagination controls; loading/empty/error states
+- [x] T-003-15 [P] [US1] `frontend/src/pages/RequestFormPage.tsx`: create/edit form (type select, title ≤200, description textarea) — edit route only offered for draft/returned
+- [x] T-003-16 [US1] `frontend/src/pages/RequestDetailPage.tsx`: detail + owner affordances (edit/delete draft, submit); delete uses a confirm dialog from `overlays.tsx`; wire routes in `App.tsx` + nav in `shell/Shell.tsx`
 
 **Checkpoint**: employee draft→submit flow works end-to-end; attack tests green.
 
@@ -66,7 +66,7 @@
 
 - [x] T-003-20 [US2] Approver check in `backend/employee_requests/views.py` via `core.permissions.get_approver(owner)`: caller == owner's manager, or HR when owner has no manager, or HR on any submitted — and caller ≠ owner (else 403)
 - [x] T-003-21 [US2] `approve`/`reject`/`return` `@action`s + `DecisionSerializer` in `backend/employee_requests/serializers.py` (comment required non-empty for reject/return → 400; optional for approve); set `decided_at` on approve/reject; history row in same transaction
-- [ ] T-003-22 [US2] `frontend/src/pages/ApprovalsPage.tsx`: `pending_my_action` queue; approve/reject/return dialog from `overlays.tsx` enforcing comment on reject/return; loading/empty/error states; nav entry gated to manager/HR
+- [x] T-003-22 [US2] `frontend/src/pages/ApprovalsPage.tsx`: `pending_my_action` queue; approve/reject/return dialog from `overlays.tsx` enforcing comment on reject/return; loading/empty/error states; nav entry gated to manager/HR
 
 **Checkpoint**: manager can decide; every decision lands in history with actor + comment.
 
@@ -87,8 +87,8 @@
 
 - [x] T-003-27 [US3] `RequestFilter` in `backend/employee_requests/filters.py` (`status`, `type`, `owner`, `created_after`, `created_before`, `pending_my_action`) + `OrderingFilter` fields + `StandardPagination` on the ViewSet
 - [x] T-003-28 [US3] Embed ordered `history` (nested serializer) in the detail response in `backend/employee_requests/serializers.py`
-- [ ] T-003-29 [US3] Filter bar (status/type/owner/date range) + sort control + pagination on `frontend/src/pages/RequestsPage.tsx`; manager "mine / team" toggle using `owner=me`
-- [ ] T-003-30 [P] [US3] Status timeline component on `frontend/src/pages/RequestDetailPage.tsx` (actor, from→to, comment, timestamp; ui kit only)
+- [x] T-003-29 [US3] Filter bar (status/type/owner/date range) + sort control + pagination on `frontend/src/pages/RequestsPage.tsx`; manager "mine / team" toggle using `owner=me`
+- [x] T-003-30 [P] [US3] Status timeline component on `frontend/src/pages/RequestDetailPage.tsx` (actor, from→to, comment, timestamp; ui kit only)
 
 **Checkpoint**: all three role lists match the permission matrix; every filter verified by tests.
 

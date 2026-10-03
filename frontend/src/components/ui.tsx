@@ -530,16 +530,17 @@ export function Badge({ variant = "default", size = "md", className, children, d
 // STATUS BADGE (approval workflow states)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type StatusType = "draft" | "pending" | "approved" | "rejected" | "returned" | "active" | "inactive";
+type StatusType = "draft" | "pending" | "submitted" | "approved" | "rejected" | "returned" | "active" | "inactive";
 
 const statusMap: Record<StatusType, { variant: BadgeVariant; label: string }> = {
-  draft:    { variant: "neutral",  label: "Draft" },
-  pending:  { variant: "warning",  label: "Pending" },
-  approved: { variant: "success",  label: "Approved" },
-  rejected: { variant: "error",    label: "Rejected" },
-  returned: { variant: "default",  label: "Returned" },
-  active:   { variant: "success",  label: "Active" },
-  inactive: { variant: "neutral",  label: "Inactive" },
+  draft:     { variant: "neutral",  label: "Draft" },
+  pending:   { variant: "warning",  label: "Pending" },
+  submitted: { variant: "warning",  label: "Submitted" },
+  approved:  { variant: "success",  label: "Approved" },
+  rejected:  { variant: "error",    label: "Rejected" },
+  returned:  { variant: "default",  label: "Returned" },
+  active:    { variant: "success",  label: "Active" },
+  inactive:  { variant: "neutral",  label: "Inactive" },
 };
 
 export function StatusBadge({ status }: { status: StatusType }) {

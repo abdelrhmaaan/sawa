@@ -13,7 +13,7 @@
 ## Phase 1: Setup (Shared Infrastructure)
 
 - [x] T-004-01 Create `backend/timesheets/` app (models, serializers, views, filters, urls, tests package) and register in `INSTALLED_APPS` in `backend/config/settings.py`
-- [ ] T-004-02 [P] Add timesheets API helpers to `frontend/src/lib/api.ts` (list/create/get/update/submit/bulk-submit/approve/return)
+- [x] T-004-02 [P] Add timesheets API helpers to `frontend/src/lib/api.ts` (list/create/get/update/submit/bulk-submit/approve/return)
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
@@ -43,8 +43,8 @@
 
 - [x] T-004-11 [US1] `TimesheetEntrySerializer` in `backend/timesheets/serializers.py`: `owner`/`status`/`hours`/timestamps read-only; `validate()` enforces `end_time > start_time`, `date <= today`, overlap `NOT (end <= other.start OR start >= other.end)` excluding `self.instance`, `note` ≤500
 - [x] T-004-12 [US1] `TimesheetEntryViewSet` in `backend/timesheets/views.py` + `backend/timesheets/urls.py` router mounted under `/api/` in `backend/config/urls.py`: scoped `get_queryset()`; `perform_create` sets owner + create history row; update owner + draft/returned only (else 400; visible non-owner → 403); destroy owner + draft only
-- [ ] T-004-13 [P] [US1] `frontend/src/pages/TimesheetEntryForm.tsx`: mobile-first create/edit form (date, start, end, note ≤500, live hours preview) — completable in <2 min at 375px
-- [ ] T-004-14 [US1] `frontend/src/pages/TimesheetsPage.tsx`: my entries grouped by date (or week view) with per-day + total hours, status badges, edit/delete for drafts; loading/empty/error states; routes + nav in `App.tsx`/`Shell.tsx`
+- [x] T-004-13 [P] [US1] `frontend/src/pages/TimesheetEntryForm.tsx`: mobile-first create/edit form (date, start, end, note ≤500, live hours preview) — completable in <2 min at 375px
+- [x] T-004-14 [US1] `frontend/src/pages/TimesheetsPage.tsx`: my entries grouped by date (or week view) with per-day + total hours, status badges, edit/delete for drafts; loading/empty/error states; routes + nav in `App.tsx`/`Shell.tsx`
 
 **Checkpoint**: logging + editing drafts works end-to-end; invalid entries rejected; attack tests green.
 
@@ -65,7 +65,7 @@
 
 - [x] T-004-19 [US2] `submit` `@action` in `backend/timesheets/views.py`: owner only (visible non-owner → 403), `draft|returned` → else 400; sets `submitted_at`, writes history, in transaction
 - [x] T-004-20 [US2] Bulk `submit` collection action (`detail=False`, route not shadowed by `{id}`) + `BulkSubmitSerializer` in `backend/timesheets/views.py`/`serializers.py`: validate every id is caller's own `draft|returned` inside `transaction.atomic()` before changing anything; non-empty `ids` required
-- [ ] T-004-21 [US2] `TimesheetsPage.tsx`: per-entry Submit button on draft/returned + select-all checkbox bulk submit (one bulk call); submitted/approved rendered read-only
+- [x] T-004-21 [US2] `TimesheetsPage.tsx`: per-entry Submit button on draft/returned + select-all checkbox bulk submit (one bulk call); submitted/approved rendered read-only
 
 **Checkpoint**: single + bulk submit verified atomic; read-only rule enforced after submit.
 
@@ -86,8 +86,8 @@
 
 - [x] T-004-26 [US3] `approve`/`return` `@action`s in `backend/timesheets/views.py` + `DecisionSerializer` (comment required for return → 400; optional for approve); approver check via `core.permissions.get_approver` + caller ≠ owner; `reviewed_at` set; history row in same transaction
 - [x] T-004-27 [US3] `TimesheetFilter` in `backend/timesheets/filters.py` (`status`, `owner`, `date_from`, `date_to`, `pending_my_action`) + ordering + `StandardPagination`; embed ordered `history` in detail serializer; add `total_hours` aggregate to list response
-- [ ] T-004-28 [US3] `frontend/src/pages/TimesheetReviewPage.tsx`: `pending_my_action` queue with approve/return dialog (`overlays.tsx`, comment enforced for return)
-- [ ] T-004-29 [P] [US3] Filters (status/date range), total-hours display, and status timeline on `frontend/src/pages/TimesheetsPage.tsx` + entry detail
+- [x] T-004-28 [US3] `frontend/src/pages/TimesheetReviewPage.tsx`: `pending_my_action` queue with approve/return dialog (`overlays.tsx`, comment enforced for return)
+- [x] T-004-29 [P] [US3] Filters (status/date range), total-hours display, and status timeline on `frontend/src/pages/TimesheetsPage.tsx` + entry detail
 
 **Checkpoint**: full loop — log → submit → manager return → edit → resubmit → approve — visible in timeline.
 

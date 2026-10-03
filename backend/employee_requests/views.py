@@ -7,7 +7,13 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from core.serializers import DecisionSerializer
-from core.workflow import can_decide, transition, visible_to
+from core.workflow import (
+    can_decide,
+    notify,
+    submission_recipients,
+    transition,
+    visible_to,
+)
 
 from .filters import RequestFilter
 from .models import Request, RequestStatusHistory
@@ -107,16 +113,22 @@ class RequestViewSet(viewsets.ModelViewSet):
         timestamps = {}
         if to_status in (Request.Status.APPROVED, Request.Status.REJECTED):
             timestamps["decided_at"] = timezone.now()
-        obj = transition(
-            obj,
-            actor=request.user,
-            to_status=to_status,
-            history_model=RequestStatusHistory,
-            history_fk="request",
-            allowed_from=[Request.Status.SUBMITTED],
-            comment=comment,
-            timestamps=timestamps,
-        )
+        with transaction.atomic():
+            obj = transition(
+                obj,
+                actor=request.user,
+                to_status=to_status,
+                history_model=RequestStatusHistory,
+                history_fk="request",
+                allowed_from=[Request.Status.SUBMITTED],
+                comment=comment,
+                timestamps=timestamps,
+            )
+            notify(
+                obj.owner,
+                f'Your request "{obj.title}" was {to_status}.',
+                link=f"/requests/{obj.pk}",
+            )
         return self._detail_response(obj)
 
     @extend_schema(request=None, responses=RequestDetailSerializer)
@@ -124,15 +136,22 @@ class RequestViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None):
         obj = self.get_object()
         self._require_owner(obj)
-        obj = transition(
-            obj,
-            actor=request.user,
-            to_status=Request.Status.SUBMITTED,
-            history_model=RequestStatusHistory,
-            history_fk="request",
-            allowed_from=list(EDITABLE),
-            timestamps={"submitted_at": timezone.now()},
-        )
+        with transaction.atomic():
+            obj = transition(
+                obj,
+                actor=request.user,
+                to_status=Request.Status.SUBMITTED,
+                history_model=RequestStatusHistory,
+                history_fk="request",
+                allowed_from=list(EDITABLE),
+                timestamps={"submitted_at": timezone.now()},
+            )
+            for recipient in submission_recipients(obj.owner):
+                notify(
+                    recipient,
+                    f'{obj.owner.full_name} submitted "{obj.title}" for approval.',
+                    link=f"/requests/{obj.pk}",
+                )
         return self._detail_response(obj)
 
     @extend_schema(request=DecisionSerializer, responses=RequestDetailSerializer)

@@ -8,7 +8,13 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from core.serializers import DecisionSerializer
-from core.workflow import can_decide, transition, visible_to
+from core.workflow import (
+    can_decide,
+    notify,
+    submission_recipients,
+    transition,
+    visible_to,
+)
 
 from .filters import TimesheetEntryFilter
 from .models import TimesheetEntry, TimesheetStatusHistory
@@ -114,16 +120,22 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
         comment = body.validated_data.get("comment", "").strip()
         if comment_required and not comment:
             raise ValidationError({"comment": "This field is required."})
-        obj = transition(
-            obj,
-            actor=request.user,
-            to_status=to_status,
-            history_model=TimesheetStatusHistory,
-            history_fk="entry",
-            allowed_from=[TimesheetEntry.Status.SUBMITTED],
-            comment=comment,
-            timestamps={"reviewed_at": timezone.now()},
-        )
+        with transaction.atomic():
+            obj = transition(
+                obj,
+                actor=request.user,
+                to_status=to_status,
+                history_model=TimesheetStatusHistory,
+                history_fk="entry",
+                allowed_from=[TimesheetEntry.Status.SUBMITTED],
+                comment=comment,
+                timestamps={"reviewed_at": timezone.now()},
+            )
+            notify(
+                obj.owner,
+                f"Your timesheet entry for {obj.date} was {to_status}.",
+                link="/timesheets",
+            )
         return self._detail_response(obj)
 
     @extend_schema(request=None, responses=TimesheetEntryDetailSerializer)
@@ -131,15 +143,22 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None):
         obj = self.get_object()
         self._require_owner(obj)
-        obj = transition(
-            obj,
-            actor=request.user,
-            to_status=TimesheetEntry.Status.SUBMITTED,
-            history_model=TimesheetStatusHistory,
-            history_fk="entry",
-            allowed_from=list(EDITABLE),
-            timestamps={"submitted_at": timezone.now()},
-        )
+        with transaction.atomic():
+            obj = transition(
+                obj,
+                actor=request.user,
+                to_status=TimesheetEntry.Status.SUBMITTED,
+                history_model=TimesheetStatusHistory,
+                history_fk="entry",
+                allowed_from=list(EDITABLE),
+                timestamps={"submitted_at": timezone.now()},
+            )
+            for recipient in submission_recipients(obj.owner):
+                notify(
+                    recipient,
+                    f"{obj.owner.full_name} submitted a timesheet entry for {obj.date}.",
+                    link="/timesheets/review",
+                )
         return self._detail_response(obj)
 
     @extend_schema(
@@ -185,6 +204,13 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
                     history_fk="entry",
                     allowed_from=list(EDITABLE),
                     timestamps={"submitted_at": now},
+                )
+            for recipient in submission_recipients(request.user):
+                notify(
+                    recipient,
+                    f"{request.user.full_name} submitted {len(rows)} timesheet "
+                    f"{'entry' if len(rows) == 1 else 'entries'} for review.",
+                    link="/timesheets/review",
                 )
         return Response({"submitted": len(rows)})
 

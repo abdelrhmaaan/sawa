@@ -1,8 +1,19 @@
 import type {
+  AppNotification,
   DashboardData,
+  EmployeeRequest,
+  EmployeeRequestDetail,
+  EntryStatus,
   Me,
+  NotificationList,
   Paginated,
+  RequestStatus,
+  RequestType,
+  TimesheetEntry,
+  TimesheetEntryDetail,
+  TimesheetList,
   TokenPair,
+  UserListItem,
 } from "./types";
 
 const API_BASE: string = import.meta.env.VITE_API_URL ?? "";
@@ -167,6 +178,160 @@ export function updateMe(patch: { first_name?: string; last_name?: string }) {
 
 export function getDashboard() {
   return apiFetch<DashboardData>("/api/dashboard/");
+}
+
+// ── Requests (spec 003) ──
+
+export type RequestListQuery = {
+  status?: RequestStatus;
+  type?: RequestType;
+  owner?: number;
+  created_after?: string;
+  created_before?: string;
+  pending_my_action?: boolean;
+  ordering?: string;
+  page?: number;
+  page_size?: number;
+};
+
+export function listRequests(query: RequestListQuery = {}) {
+  return apiFetch<Paginated<EmployeeRequest>>("/api/requests/", { query });
+}
+
+export function getRequest(id: number) {
+  return apiFetch<EmployeeRequestDetail>(`/api/requests/${id}/`);
+}
+
+export function createRequest(body: {
+  type: RequestType;
+  title: string;
+  description: string;
+}) {
+  return apiFetch<EmployeeRequest>("/api/requests/", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateRequest(
+  id: number,
+  patch: { type?: RequestType; title?: string; description?: string }
+) {
+  return apiFetch<EmployeeRequestDetail>(`/api/requests/${id}/`, {
+    method: "PATCH",
+    body: patch,
+  });
+}
+
+export function deleteRequest(id: number) {
+  return apiFetch<void>(`/api/requests/${id}/`, { method: "DELETE" });
+}
+
+export function submitRequest(id: number) {
+  return apiFetch<EmployeeRequestDetail>(`/api/requests/${id}/submit/`, {
+    method: "POST",
+  });
+}
+
+export type RequestAction = "approve" | "reject" | "return";
+
+export function decideRequest(id: number, action: RequestAction, comment = "") {
+  return apiFetch<EmployeeRequestDetail>(`/api/requests/${id}/${action}/`, {
+    method: "POST",
+    body: { comment },
+  });
+}
+
+// ── Timesheets (spec 004) ──
+
+export type TimesheetListQuery = {
+  status?: EntryStatus;
+  owner?: number;
+  date_from?: string;
+  date_to?: string;
+  pending_my_action?: boolean;
+  ordering?: string;
+  page?: number;
+  page_size?: number;
+};
+
+export function listTimesheets(query: TimesheetListQuery = {}) {
+  return apiFetch<TimesheetList>("/api/timesheets/", { query });
+}
+
+export function getTimesheetEntry(id: number) {
+  return apiFetch<TimesheetEntryDetail>(`/api/timesheets/${id}/`);
+}
+
+export interface TimesheetEntryInput {
+  date: string;
+  start_time: string;
+  end_time: string;
+  note?: string;
+}
+
+export function createTimesheetEntry(body: TimesheetEntryInput) {
+  return apiFetch<TimesheetEntry>("/api/timesheets/", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateTimesheetEntry(id: number, patch: Partial<TimesheetEntryInput>) {
+  return apiFetch<TimesheetEntryDetail>(`/api/timesheets/${id}/`, {
+    method: "PATCH",
+    body: patch,
+  });
+}
+
+export function deleteTimesheetEntry(id: number) {
+  return apiFetch<void>(`/api/timesheets/${id}/`, { method: "DELETE" });
+}
+
+export function submitTimesheetEntry(id: number) {
+  return apiFetch<TimesheetEntryDetail>(`/api/timesheets/${id}/submit/`, {
+    method: "POST",
+  });
+}
+
+export function bulkSubmitTimesheetEntries(ids: number[]) {
+  return apiFetch<{ submitted: number }>("/api/timesheets/submit/", {
+    method: "POST",
+    body: { ids },
+  });
+}
+
+export type TimesheetAction = "approve" | "return";
+
+export function decideTimesheetEntry(id: number, action: TimesheetAction, comment = "") {
+  return apiFetch<TimesheetEntryDetail>(`/api/timesheets/${id}/${action}/`, {
+    method: "POST",
+    body: { comment },
+  });
+}
+
+// ── Users directory (manager/HR only; employees get 403) ──
+
+export function listUsers(query: { page?: number; page_size?: number } = {}) {
+  return apiFetch<Paginated<UserListItem>>("/api/users/", { query });
+}
+
+// ── Notifications (spec 005, optional) ──
+
+export function listNotifications(query: { page?: number; page_size?: number } = {}) {
+  return apiFetch<NotificationList>("/api/notifications/", { query });
+}
+
+export function markNotificationRead(id: number) {
+  return apiFetch<AppNotification>(`/api/notifications/${id}/read/`, {
+    method: "POST",
+  });
+}
+
+export function markAllNotificationsRead() {
+  return apiFetch<{ marked_read: number }>("/api/notifications/read-all/", {
+    method: "POST",
+  });
 }
 
 export type { Paginated };

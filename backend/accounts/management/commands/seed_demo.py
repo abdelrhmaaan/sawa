@@ -131,7 +131,7 @@ class Command(BaseCommand):
         from timesheets.models import TimesheetEntry, TimesheetStatusHistory
 
         today = timezone.localdate()
-        monday = today - datetime.timedelta(days=today.weekday() + 7)  # last week
+        monday = today - datetime.timedelta(days=today.weekday())  # current ISO week
         # (day offset, start, end, status, note)
         template = [
             (0, "09:00", "17:00", "approved", "Feature work"),
@@ -147,6 +147,8 @@ class Command(BaseCommand):
         for owner in users:
             for offset, start, end, status, note in template:
                 day = monday + datetime.timedelta(days=offset)
+                if day > today:  # entries can't be future-dated
+                    continue
                 st = datetime.time(*map(int, start.split(":")))
                 et = datetime.time(*map(int, end.split(":")))
                 entry, created = TimesheetEntry.objects.get_or_create(

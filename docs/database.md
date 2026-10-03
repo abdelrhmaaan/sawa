@@ -11,7 +11,7 @@ erDiagram
     User ||--o{ RequestStatusHistory : "actor"
     User ||--o{ TimesheetEntry : "owner"
     User ||--o{ TimesheetStatusHistory : "actor"
-    User ||--o{ Notification : "recipient (optional)"
+    User ||--o{ Notification : "recipient"
     Request ||--o{ RequestStatusHistory : "history"
     TimesheetEntry ||--o{ TimesheetStatusHistory : "history"
 
@@ -128,7 +128,7 @@ erDiagram
 
 **Overlap rule**: for the same `owner`+`date`, reject a range overlapping any other entry (`NOT (end <= other.start OR start >= other.end)`; excludes self on update).
 
-### `core.Notification` *(optional — feature 005 US2)*
+### `core.Notification` *(feature 005 US2)*
 
 | Field | Type | Constraints |
 |---|---|---|

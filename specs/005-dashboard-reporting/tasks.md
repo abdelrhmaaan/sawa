@@ -50,22 +50,22 @@
 
 ### Tests for User Story 2 — write FIRST, ensure they FAIL
 
-- [ ] T-005-09 [P] [US2] Creation tests in `backend/core/tests/test_notifications.py`: request submit notifies approver (no manager → all HR users); approve/reject/return notifies owner; same coverage for timesheet transitions
-- [ ] T-005-10 [P] [US2] Endpoint tests in `test_notifications.py`: list = own only, unread first, paginated, includes `unread_count`; `POST {id}/read/` marks read; `POST read-all/` clears all
-- [ ] T-005-11 [P] [US2] Attack test in `test_notifications.py`: GET/read another user's notification id → 404; unauthenticated → 401
+- [x] T-005-09 [P] [US2] Creation tests in `backend/core/tests/test_notifications.py`: request submit notifies approver (no manager → all HR users); approve/reject/return notifies owner; same coverage for timesheet transitions
+- [x] T-005-10 [P] [US2] Endpoint tests in `test_notifications.py`: list = own only, unread first, paginated, includes `unread_count`; `POST {id}/read/` marks read; `POST read-all/` clears all
+- [x] T-005-11 [P] [US2] Attack test in `test_notifications.py`: GET/read another user's notification id → 404; unauthenticated → 401
 
 ### Implementation for User Story 2
 
-- [ ] T-005-12 [US2] `Notification` model in `backend/core/models.py` (`user` FK CASCADE, `message` ≤300, `link`, `is_read` default False, `created_at`) + `core.notify(user, message, link)` helper; `makemigrations`
-- [ ] T-005-13 [US2] Call `core.notify` inside the existing transition transactions in `backend/employee_requests/views.py` and `backend/timesheets/views.py` (submit → approver / all HR; approve·reject·return → owner)
-- [ ] T-005-14 [US2] `NotificationSerializer` + views in `backend/core/views.py`: own-scoped queryset (unread first), `{id}/read/` and `read-all/` actions, `unread_count` in list response
-- [ ] T-005-15 [US2] Bell with unread badge + dropdown list in `frontend/src/shell/Shell.tsx`; mark-read on click; link navigates to the item
+- [x] T-005-12 [US2] `Notification` model in `backend/core/models.py` (`user` FK CASCADE, `message` ≤300, `link`, `is_read` default False, `created_at`) + `core.notify(user, message, link)` helper; `makemigrations`
+- [x] T-005-13 [US2] Call `core.notify` inside the existing transition transactions in `backend/employee_requests/views.py` and `backend/timesheets/views.py` (submit → approver / all HR; approve·reject·return → owner)
+- [x] T-005-14 [US2] `NotificationSerializer` + views in `backend/core/views.py`: own-scoped queryset (unread first), `{id}/read/` and `read-all/` actions, `unread_count` in list response
+- [x] T-005-15 [US2] Bell with unread badge + dropdown list in `frontend/src/shell/Shell.tsx`; mark-read on click; link navigates to the item
 
 **Checkpoint**: notifications fire on every transition; unread badge accurate.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T-005-16 [P] Update `docs/api.md` (dashboard + notifications rows, permission matrix) and `docs/database.md` (`Notification` model, marked optional)
+- [x] T-005-16 [P] Update `docs/api.md` (dashboard + notifications rows, permission matrix) and `docs/database.md` (`Notification` model, marked optional)
 - [x] T-005-17 [P] UX states + responsive pass (375/768/1280) on `DashboardPage.tsx`
 - [x] T-005-18 Run full `pytest` green; smoke: each role's dashboard on seeded data
 - [ ] T-005-19 Log AI usage for this feature in `docs/ai-usage.md`

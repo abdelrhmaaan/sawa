@@ -4,6 +4,8 @@ status-history shape used by employee_requests and timesheets."""
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from .models import Notification
+
 USER_REF_SCHEMA = {
     "type": "object",
     "nullable": True,
@@ -45,3 +47,10 @@ class DecisionSerializer(serializers.Serializer):
     comment = serializers.CharField(
         required=False, allow_blank=True, trim_whitespace=True, max_length=2000
     )
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "message", "link", "is_read", "created_at"]
+        read_only_fields = fields

@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Avatar, Badge } from "@/components/ui";
 import { Dropdown } from "@/components/overlays";
+import { NotificationsBell } from "./NotificationsBell";
 import type { Role } from "@/lib/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -211,6 +212,7 @@ function Topbar({ title, user, onMenuToggle, showMenuButton, actions }: TopbarPr
       {/* Right actions */}
       <div className="flex items-center gap-2 shrink-0">
         {actions}
+        <NotificationsBell />
         <Badge variant="brand" size="sm">{roleLabels[user.role]}</Badge>
         <Avatar name={user.name} size="sm" />
       </div>

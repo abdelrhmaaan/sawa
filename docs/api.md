@@ -67,9 +67,9 @@ Source of truth: `specs/002-authentication-rbac/` · `003-employee-requests/` ·
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/dashboard/` | role-shaped payload: `my_requests`/`my_entries`/`my_hours_this_week` + `team` (manager) or `org` (hr); sections absent for lower roles |
-| GET | `/api/notifications/` *(optional)* | own only, unread first, paginated, `unread_count` in response |
-| POST | `/api/notifications/{id}/read/` *(optional)* | owner only; other user's → 404 |
-| POST | `/api/notifications/read-all/` *(optional)* | marks all caller's notifications read |
+| GET | `/api/notifications/` | own only, unread first, paginated, `unread_count` in response |
+| POST | `/api/notifications/{id}/read/` | owner only; other user's → 404 |
+| POST | `/api/notifications/read-all/` | marks all caller's notifications read |
 
 ## Permission Matrix
 
@@ -94,6 +94,6 @@ Source of truth: `specs/002-authentication-rbac/` · `003-employee-requests/` ·
 | POST `…/submit/` + bulk `submit/` | own draft/returned; bulk ids all own or 400 atomic | same | same |
 | POST `…/approve/`/`return/` | 403 | approver only; never own → 403; other team's → 404 | any submitted, never own → 403 |
 | GET `/api/dashboard/` | own sections only | + `team` (direct reports) | + `org` (all, excl. own pending) |
-| GET/POST `/api/notifications/*` *(opt)* | own only (others → 404) | same | same |
+| GET/POST `/api/notifications/*` | own only (others → 404) | same | same |
 
 **Every status change writes a history row** (actor, from→to, comment, timestamp) in the same transaction.

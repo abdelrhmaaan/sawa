@@ -12,11 +12,16 @@ import { ToastProvider } from "@/components/overlays";
 import { Button, EmptyState, LoadingState } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { Shell } from "@/shell/Shell";
+import ApprovalsPage from "@/pages/ApprovalsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import DesignSystem from "@/pages/DesignSystem";
 import LoginPage from "@/pages/LoginPage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
 import ProfilePage from "@/pages/ProfilePage";
+import RequestDetailPage from "@/pages/RequestDetailPage";
+import RequestFormPage from "@/pages/RequestFormPage";
+import RequestsPage from "@/pages/RequestsPage";
+import TimesheetReviewPage from "@/pages/TimesheetReviewPage";
+import TimesheetsPage from "@/pages/TimesheetsPage";
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
@@ -25,10 +30,17 @@ const pageTitles: Record<string, string> = {
   "/requests/new": "New request",
   "/approvals": "Approvals",
   "/timesheets": "My timesheets",
-  "/timesheets/new": "Log time",
   "/timesheets/review": "Timesheet review",
   "/design-system": "Design system",
 };
+
+// Titles for dynamic paths (e.g. /requests/12, /requests/12/edit).
+function resolvePageTitle(pathname: string): string {
+  if (pageTitles[pathname]) return pageTitles[pathname];
+  if (/^\/requests\/\d+\/edit$/.test(pathname)) return "Edit request";
+  if (/^\/requests\/\d+$/.test(pathname)) return "Request";
+  return "SAWA";
+}
 
 function RequireAuth() {
   const { status } = useAuth();
@@ -61,7 +73,7 @@ function ShellLayout() {
         department: user.department,
       }}
       onLogout={logout}
-      pageTitle={pageTitles[location.pathname] ?? "SAWA"}
+      pageTitle={resolvePageTitle(location.pathname)}
     >
       <Outlet />
     </Shell>
@@ -92,29 +104,18 @@ export default function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/design-system" element={<DesignSystem />} />
+                <Route path="/requests" element={<RequestsPage />} />
+                <Route path="/requests/new" element={<RequestFormPage />} />
+                <Route path="/requests/:id" element={<RequestDetailPage />} />
                 <Route
-                  path="/requests"
-                  element={<PlaceholderPage title="My requests" />}
+                  path="/requests/:id/edit"
+                  element={<RequestFormPage />}
                 />
-                <Route
-                  path="/requests/new"
-                  element={<PlaceholderPage title="New request" />}
-                />
-                <Route
-                  path="/approvals"
-                  element={<PlaceholderPage title="Approvals" />}
-                />
-                <Route
-                  path="/timesheets"
-                  element={<PlaceholderPage title="My timesheets" />}
-                />
-                <Route
-                  path="/timesheets/new"
-                  element={<PlaceholderPage title="Log time" />}
-                />
+                <Route path="/approvals" element={<ApprovalsPage />} />
+                <Route path="/timesheets" element={<TimesheetsPage />} />
                 <Route
                   path="/timesheets/review"
-                  element={<PlaceholderPage title="Timesheet review" />}
+                  element={<TimesheetReviewPage />}
                 />
                 <Route path="*" element={<NotFound />} />
               </Route>
