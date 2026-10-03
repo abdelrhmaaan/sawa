@@ -96,9 +96,9 @@
 
 - [x] T-003-31 [P] Update `docs/api.md` permission matrix + endpoint rows for `/api/requests/*`; update `docs/database.md` with Request/RequestStatusHistory
 - [x] T-003-32 [P] Add drf-spectacular tags/descriptions for request endpoints so `/api/docs/` reads cleanly
-- [ ] T-003-33 [P] UX states + responsive pass (375/768/1280) on request screens (constitution II/III)
+- [x] T-003-33 [P] UX states + responsive pass (375/768/1280) on request screens (constitution II/III)
 - [x] T-003-34 Run full `pytest` green; manual smoke on seeded data: submit → manager approves → timeline shows both events
-- [ ] T-003-35 Log AI usage for this feature in `docs/ai-usage.md`
+- [x] T-003-35 Log AI usage for this feature in `docs/ai-usage.md`
 
 ---
 

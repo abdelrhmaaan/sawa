@@ -29,8 +29,8 @@
 
 ## Phase 4: Open
 
-- [ ] T-001-13 Write `README.md` (setup, architecture, tests, deployment, demo credentials) — cross-ref T-002-36, due by Mon 5 Oct
-- [ ] T-001-14 Write `docs/architecture.md` (browser → React → REST → Django → PostgreSQL diagram, hosting plan, JWT-storage trade-off note) — target Mon 5 Oct per `docs/plan.md` §0.4
+- [x] T-001-13 Write `README.md` (setup, architecture, tests, deployment, demo credentials) — cross-ref T-002-36, due by Mon 5 Oct
+- [x] T-001-14 Write `docs/architecture.md` (browser → React → REST → Django → PostgreSQL diagram, hosting plan, JWT-storage trade-off note) — target Mon 5 Oct per `docs/plan.md` §0.4
 
 ---
 

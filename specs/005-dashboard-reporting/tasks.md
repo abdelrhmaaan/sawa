@@ -68,7 +68,7 @@
 - [x] T-005-16 [P] Update `docs/api.md` (dashboard + notifications rows, permission matrix) and `docs/database.md` (`Notification` model, marked optional)
 - [x] T-005-17 [P] UX states + responsive pass (375/768/1280) on `DashboardPage.tsx`
 - [x] T-005-18 Run full `pytest` green; smoke: each role's dashboard on seeded data
-- [ ] T-005-19 Log AI usage for this feature in `docs/ai-usage.md`
+- [x] T-005-19 Log AI usage for this feature in `docs/ai-usage.md`
 
 ---
 

@@ -106,7 +106,7 @@
 - [x] T-002-35 [P] Frontend UX-states pass: login + guarded pages show loading/empty/error states at 375px width (constitution II)
 - [x] T-002-36 Update `README.md` dev quickstart (compose up, migrate, seed, runserver, vite dev, demo credentials location)
 - [x] T-002-37 Run full `pytest` green; end-to-end smoke: `docker compose up` → `seed_demo` → login as each role → `/api/docs/` lists endpoints
-- [ ] T-002-38 Log AI usage for this feature in `docs/ai-usage.md`
+- [x] T-002-38 Log AI usage for this feature in `docs/ai-usage.md`
 
 ---
 

@@ -95,9 +95,9 @@
 
 - [x] T-004-30 [P] Update `docs/api.md` permission matrix + endpoint rows for `/api/timesheets/*`; update `docs/database.md` with TimesheetEntry/TimesheetStatusHistory
 - [x] T-004-31 [P] Add drf-spectacular tags/descriptions for timesheet endpoints so `/api/docs/` reads cleanly
-- [ ] T-004-32 [P] UX states + responsive pass (375/768/1280) on timesheet screens; verify the <2-min mobile logging claim (SC-001)
+- [x] T-004-32 [P] UX states + responsive pass (375/768/1280) on timesheet screens; verify the <2-min mobile logging claim (SC-001)
 - [x] T-004-33 Run full `pytest` green; manual smoke on seeded week: submit → return → edit → approve
-- [ ] T-004-34 Log AI usage for this feature in `docs/ai-usage.md`
+- [x] T-004-34 Log AI usage for this feature in `docs/ai-usage.md`
 
 ---
 
