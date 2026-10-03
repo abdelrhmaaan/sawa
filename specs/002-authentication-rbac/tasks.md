@@ -34,8 +34,8 @@
 - [x] T-002-10 Create `backend/core/` app: `permissions.py` (`IsHR`, `IsManagerOrHR`, `get_approver(user)` → owner's direct manager else HR, never self) and `pagination.py` (`StandardPagination`)
 - [x] T-002-11 Register `User` in `backend/accounts/admin.py` (fieldsets incl. role/department/manager, list filters by role/department) so HR (`is_staff`) manages users via `/admin/`
 - [x] T-002-12 Write `backend/accounts/management/commands/seed_demo.py`: idempotent (`update_or_create`) — 1 HR (`is_staff=True`), 2 managers (no manager), 4 employees (2 per manager); password from `SEED_DEMO_PASSWORD` env; leave extension points for 003/004 sample data
-- [ ] T-002-13 [P] Frontend plumbing: add `react-router` dependency; create fetch wrapper `frontend/src/lib/api.ts` (attach in-memory access token; on 401 retry once after refreshing via localStorage refresh token, else force logout)
-- [ ] T-002-14 Create `frontend/src/lib/auth.tsx` `AuthContext`/`useAuth`: `login`, `logout`, `user` state; access token in memory, refresh token in localStorage
+- [x] T-002-13 [P] Frontend plumbing: add `react-router` dependency; create fetch wrapper `frontend/src/lib/api.ts` (attach in-memory access token; on 401 retry once after refreshing via localStorage refresh token, else force logout)
+- [x] T-002-14 Create `frontend/src/lib/auth.tsx` `AuthContext`/`useAuth`: `login`, `logout`, `user` state; access token in memory, refresh token in localStorage
 
 **Checkpoint**: `docker compose up` works, `pytest` collects, `seed_demo` runs, `/api/docs/` renders — stories can start.
 
@@ -55,9 +55,9 @@
 
 - [x] T-002-18 [US1] `EmailTokenObtainPairSerializer` in `backend/accounts/serializers.py` (email field, case-insensitive lookup, reject `is_active=False` with generic 401); wire `POST /api/auth/token/` + `POST /api/auth/token/refresh/` in `backend/config/urls.py`; set simplejwt lifetimes + `ROTATE_REFRESH_TOKENS=True` in settings
 - [x] T-002-19 [US1] `MeSerializer` + `GET /api/me/` in `backend/accounts/serializers.py`/`views.py` returning email, names, role, department, manager (id + display name)
-- [ ] T-002-20 [P] [US1] Build `frontend/src/pages/LoginPage.tsx` from `ui.tsx` components: email+password form, loading state, generic error on failure
-- [ ] T-002-21 [US1] Wire `frontend/src/App.tsx`: `/login` public; all other routes behind a `RequireAuth` guard (unauthenticated → `/login`; restoring session shows a loading state, not a flash of login)
-- [ ] T-002-22 [US1] `frontend/src/shell/Shell.tsx`: show real `user` from `useAuth` and a working logout button
+- [x] T-002-20 [P] [US1] Build `frontend/src/pages/LoginPage.tsx` from `ui.tsx` components: email+password form, loading state, generic error on failure
+- [x] T-002-21 [US1] Wire `frontend/src/App.tsx`: `/login` public; all other routes behind a `RequireAuth` guard (unauthenticated → `/login`; restoring session shows a loading state, not a flash of login)
+- [x] T-002-22 [US1] `frontend/src/shell/Shell.tsx`: show real `user` from `useAuth` and a working logout button
 
 **Checkpoint**: Full sign-in → workspace → reload → sign-out loop works end-to-end; attack tests green.
 
@@ -75,8 +75,8 @@
 ### Implementation for User Story 2
 
 - [x] T-002-25 [US2] Extend `MeSerializer` (`role`, `email`, `department`, `manager` `read_only`) and add `PATCH /api/me/` to the same view in `backend/accounts/serializers.py`/`views.py`
-- [ ] T-002-26 [US2] `frontend/src/pages/ProfilePage.tsx`: view profile fields (role/department/manager shown read-only) + first/last name edit form built from `ui.tsx`
-- [ ] T-002-27 [US2] Role-aware navigation in `frontend/src/shell/Shell.tsx`: nav items filtered by `user.role` (approvals link for manager/HR only — cosmetic; server enforces)
+- [x] T-002-26 [US2] `frontend/src/pages/ProfilePage.tsx`: view profile fields (role/department/manager shown read-only) + first/last name edit form built from `ui.tsx`
+- [x] T-002-27 [US2] Role-aware navigation in `frontend/src/shell/Shell.tsx`: nav items filtered by `user.role` (approvals link for manager/HR only — cosmetic; server enforces)
 
 **Checkpoint**: Profile editable for names only; escalation attempt covered by a green test.
 
@@ -103,7 +103,7 @@
 
 - [x] T-002-33 [P] Update `docs/database.md` (User model + relations) and `docs/api.md` permission-matrix rows for auth/me/users endpoints
 - [x] T-002-34 [P] Add drf-spectacular tags/descriptions so auth, me, users render cleanly in `/api/docs/` (`backend/config/urls.py`, `backend/accounts/views.py`)
-- [ ] T-002-35 [P] Frontend UX-states pass: login + guarded pages show loading/empty/error states at 375px width (constitution II)
+- [x] T-002-35 [P] Frontend UX-states pass: login + guarded pages show loading/empty/error states at 375px width (constitution II)
 - [x] T-002-36 Update `README.md` dev quickstart (compose up, migrate, seed, runserver, vite dev, demo credentials location)
 - [x] T-002-37 Run full `pytest` green; end-to-end smoke: `docker compose up` → `seed_demo` → login as each role → `/api/docs/` lists endpoints
 - [ ] T-002-38 Log AI usage for this feature in `docs/ai-usage.md`

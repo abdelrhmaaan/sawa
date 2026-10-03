@@ -10,6 +10,7 @@ from accounts.serializers import (
     EmailTokenObtainPairSerializer,
 )
 from accounts.views import MeView, UserViewSet
+from core.views import DashboardView
 from employee_requests.urls import router as requests_router
 from timesheets.urls import router as timesheets_router
 
@@ -41,5 +42,6 @@ urlpatterns = [
         name="token_refresh",
     ),
     path("api/me/", MeView.as_view(), name="me"),
+    path("api/dashboard/", DashboardView.as_view(), name="dashboard"),
     path("api/", include(router.urls)),
 ]

@@ -1,61 +1,127 @@
-import { useState } from "react";
-import { Shell, type Role } from "@/shell/Shell";
-import { ToastProvider } from "@/components/overlays";
-import DesignSystem from "@/pages/DesignSystem";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router";
+import { Compass } from "lucide-react";
 
-const users = {
-  employee: { name: "Layla Hassan",   role: "employee" as Role, department: "Engineering" },
-  manager:  { name: "Omar Khalid",    role: "manager"  as Role, department: "Engineering" },
-  hr:       { name: "Nour Saleh",     role: "hr"       as Role, department: "Human Resources" },
-};
+import { ToastProvider } from "@/components/overlays";
+import { Button, EmptyState, LoadingState } from "@/components/ui";
+import { AuthProvider, useAuth } from "@/lib/auth";
+import { Shell } from "@/shell/Shell";
+import DashboardPage from "@/pages/DashboardPage";
+import DesignSystem from "@/pages/DesignSystem";
+import LoginPage from "@/pages/LoginPage";
+import PlaceholderPage from "@/pages/PlaceholderPage";
+import ProfilePage from "@/pages/ProfilePage";
 
 const pageTitles: Record<string, string> = {
-  dashboard:  "Dashboard",
-  requests:   "Requests",
-  timesheets: "Timesheets",
-  employees:  "Employees",
-  reports:    "Reports",
-  settings:   "Settings",
-  profile:    "My Profile",
-  design:     "Design System",
+  "/": "Dashboard",
+  "/profile": "My profile",
+  "/requests": "My requests",
+  "/requests/new": "New request",
+  "/approvals": "Approvals",
+  "/timesheets": "My timesheets",
+  "/timesheets/new": "Log time",
+  "/timesheets/review": "Timesheet review",
+  "/design-system": "Design system",
 };
 
-export default function App() {
-  const [role, setRole]       = useState<Role>("employee");
-  const [activeKey, setActive] = useState("design");
+function RequireAuth() {
+  const { status } = useAuth();
+  const location = useLocation();
 
-  const user = { ...users[role], role };
+  if (status === "loading") {
+    // Full-page loading — never flash the login screen while restoring a session.
+    return (
+      <div className="min-h-screen bg-page flex items-center justify-center">
+        <LoadingState message="Signing you in…" />
+      </div>
+    );
+  }
+  if (status === "anonymous") {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <Outlet />;
+}
 
-  const handleRoleChange = (r: Role) => {
-    setRole(r);
-    setActive("design");
-  };
+function ShellLayout() {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  if (!user) return null;
 
   return (
-    <ToastProvider>
-      <Shell
-        role={role}
-        user={user}
-        onRoleChange={handleRoleChange}
-        activeKey={activeKey}
-        onNavigate={setActive}
-        pageTitle={pageTitles[activeKey] ?? "SAWA"}
-      >
-        {activeKey === "design" ? (
-          <DesignSystem />
-        ) : (
-          // Placeholder for future product screens
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center mb-4">
-              <span className="text-xl">🚧</span>
-            </div>
-            <h2 className="text-h2 text-text-primary mb-2">{pageTitles[activeKey] ?? activeKey}</h2>
-            <p className="text-body-sm text-text-secondary max-w-sm">
-              This screen will be built in the next phase. The shell, navigation, and design system are ready.
-            </p>
-          </div>
-        )}
-      </Shell>
-    </ToastProvider>
+    <Shell
+      user={{
+        name: `${user.first_name} ${user.last_name}`.trim() || user.email,
+        role: user.role,
+        department: user.department,
+      }}
+      onLogout={logout}
+      pageTitle={pageTitles[location.pathname] ?? "SAWA"}
+    >
+      <Outlet />
+    </Shell>
+  );
+}
+
+function NotFound() {
+  const location = useLocation();
+  return (
+    <EmptyState
+      icon={<Compass size={22} />}
+      title="Page not found"
+      description={`Nothing lives at ${location.pathname}.`}
+      action={<Button size="sm" onClick={() => window.history.back()}>Go back</Button>}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<RequireAuth />}>
+              <Route element={<ShellLayout />}>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/design-system" element={<DesignSystem />} />
+                <Route
+                  path="/requests"
+                  element={<PlaceholderPage title="My requests" />}
+                />
+                <Route
+                  path="/requests/new"
+                  element={<PlaceholderPage title="New request" />}
+                />
+                <Route
+                  path="/approvals"
+                  element={<PlaceholderPage title="Approvals" />}
+                />
+                <Route
+                  path="/timesheets"
+                  element={<PlaceholderPage title="My timesheets" />}
+                />
+                <Route
+                  path="/timesheets/new"
+                  element={<PlaceholderPage title="Log time" />}
+                />
+                <Route
+                  path="/timesheets/review"
+                  element={<PlaceholderPage title="Timesheet review" />}
+                />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Route>
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

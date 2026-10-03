@@ -1,73 +1,63 @@
 import { useState, type ReactNode } from "react";
+import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   ClipboardList,
   Clock,
-  Users,
-  BarChart2,
-  Settings,
+  CheckSquare,
+  ListChecks,
   User,
   ChevronDown,
-  Bell,
-  Search,
   Menu,
-  X,
   LogOut,
-  HelpCircle,
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, Badge } from "@/components/ui";
 import { Dropdown } from "@/components/overlays";
+import type { Role } from "@/lib/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type Role = "employee" | "manager" | "hr";
-
 interface NavItem {
-  key: string;
+  to: string;
   label: string;
   icon: ReactNode;
-  badge?: number;
+  end?: boolean;
 }
 
-interface CurrentUser {
+export interface ShellUser {
   name: string;
   role: Role;
-  department: string;
+  department?: string;
   avatarSrc?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NAV CONFIG
+// NAV CONFIG — role-aware: everyone gets the base items; manager + hr get the
+// two review queues. Profile lives in the user menu, not the nav.
 // ─────────────────────────────────────────────────────────────────────────────
 
+const baseNav: NavItem[] = [
+  { to: "/", label: "Dashboard", icon: <LayoutDashboard size={17} />, end: true },
+  { to: "/requests", label: "My requests", icon: <ClipboardList size={17} /> },
+  { to: "/timesheets", label: "My timesheets", icon: <Clock size={17} /> },
+];
+
+const approverNav: NavItem[] = [
+  { to: "/approvals", label: "Approvals", icon: <CheckSquare size={17} /> },
+  { to: "/timesheets/review", label: "Timesheet review", icon: <ListChecks size={17} /> },
+];
+
 const navConfig: Record<Role, NavItem[]> = {
-  employee: [
-    { key: "dashboard",  label: "Dashboard",  icon: <LayoutDashboard size={17} /> },
-    { key: "requests",   label: "Requests",   icon: <ClipboardList size={17} />, badge: 2 },
-    { key: "timesheets", label: "Timesheets", icon: <Clock size={17} /> },
-    { key: "profile",    label: "Profile",    icon: <User size={17} /> },
-  ],
-  manager: [
-    { key: "dashboard",  label: "Dashboard",  icon: <LayoutDashboard size={17} /> },
-    { key: "requests",   label: "Requests",   icon: <ClipboardList size={17} />, badge: 5 },
-    { key: "timesheets", label: "Timesheets", icon: <Clock size={17} /> },
-    { key: "reports",    label: "Reports",    icon: <BarChart2 size={17} /> },
-  ],
-  hr: [
-    { key: "dashboard",  label: "Dashboard",  icon: <LayoutDashboard size={17} /> },
-    { key: "requests",   label: "Requests",   icon: <ClipboardList size={17} />, badge: 12 },
-    { key: "timesheets", label: "Timesheets", icon: <Clock size={17} /> },
-    { key: "employees",  label: "Employees",  icon: <Users size={17} /> },
-    { key: "reports",    label: "Reports",    icon: <BarChart2 size={17} /> },
-    { key: "settings",   label: "Settings",   icon: <Settings size={17} /> },
-  ],
+  employee: baseNav,
+  manager: [...baseNav, ...approverNav],
+  hr: [...baseNav, ...approverNav],
 };
 
-const roleLabels: Record<Role, string> = {
+export const roleLabels: Record<Role, string> = {
   employee: "Employee",
   manager: "Manager",
   hr: "HR Admin",
@@ -77,7 +67,7 @@ const roleLabels: Record<Role, string> = {
 // LOGO
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SawaLogo({ collapsed }: { collapsed?: boolean }) {
+export function SawaLogo({ collapsed }: { collapsed?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
       <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center shrink-0 shadow-sm">
@@ -98,16 +88,15 @@ function SawaLogo({ collapsed }: { collapsed?: boolean }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
-  role: Role;
-  activeKey: string;
-  onNavigate: (key: string) => void;
-  user: CurrentUser;
-  onRoleChange: (role: Role) => void;
+  user: ShellUser;
+  onLogout: () => void;
   collapsed?: boolean;
+  onNavigate?: () => void;
 }
 
-function SidebarNav({ role, activeKey, onNavigate, user, onRoleChange, collapsed }: SidebarProps) {
-  const items = navConfig[role];
+function SidebarNav({ user, onLogout, collapsed, onNavigate }: SidebarProps) {
+  const navigate = useNavigate();
+  const items = navConfig[user.role];
 
   return (
     <nav className="flex flex-col h-full">
@@ -121,49 +110,39 @@ function SidebarNav({ role, activeKey, onNavigate, user, onRoleChange, collapsed
         {!collapsed && (
           <p className="text-overline text-text-muted px-2 mb-2 mt-1">Navigation</p>
         )}
-        {items.map((item) => {
-          const isActive = activeKey === item.key;
-          return (
-            <button
-              key={item.key}
-              onClick={() => onNavigate(item.key)}
-              title={collapsed ? item.label : undefined}
-              className={cn(
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            onClick={onNavigate}
+            title={collapsed ? item.label : undefined}
+            className={({ isActive }) =>
+              cn(
                 "w-full flex items-center gap-2.5 rounded-lg transition-all duration-150 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 group",
                 collapsed ? "h-9 justify-center px-0" : "h-9 px-2.5",
                 isActive
                   ? "bg-brand-50 text-brand-700"
                   : "text-text-secondary hover:bg-surface-alt hover:text-text-primary"
-              )}
-            >
-              <span className={cn(
-                "shrink-0 transition-colors",
-                isActive ? "text-brand-600" : "text-text-muted group-hover:text-text-secondary"
-              )}>
-                {item.icon}
-              </span>
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && item.badge > 0 ? (
-                    <span className={cn(
-                      "text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center",
-                      isActive ? "bg-brand-600 text-white" : "bg-surface-alt text-text-muted"
-                    )}>
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </>
-              )}
-              {collapsed && item.badge && item.badge > 0 ? (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-brand-600" />
-              ) : null}
-            </button>
-          );
-        })}
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span className={cn(
+                  "shrink-0 transition-colors",
+                  isActive ? "text-brand-600" : "text-text-muted group-hover:text-text-secondary"
+                )}>
+                  {item.icon}
+                </span>
+                {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+              </>
+            )}
+          </NavLink>
+        ))}
       </div>
 
-      {/* Bottom: user profile */}
+      {/* Bottom: user menu */}
       <div className={cn("border-t border-border py-3 shrink-0", collapsed ? "px-2" : "px-3")}>
         {!collapsed && (
           <Dropdown
@@ -179,17 +158,13 @@ function SidebarNav({ role, activeKey, onNavigate, user, onRoleChange, collapsed
               </button>
             }
             items={[
-              { key: "switch-employee", label: "Switch: Employee",  icon: <User size={14} /> },
-              { key: "switch-manager",  label: "Switch: Manager",   icon: <Users size={14} /> },
-              { key: "switch-hr",       label: "Switch: HR Admin",  icon: <Settings size={14} /> },
+              { key: "profile", label: "My profile", icon: <User size={14} /> },
               { key: "divider-1", label: "", divider: true },
-              { key: "help",   label: "Help & Support", icon: <HelpCircle size={14} /> },
-              { key: "logout", label: "Sign out",       icon: <LogOut size={14} />, destructive: true },
+              { key: "logout", label: "Sign out", icon: <LogOut size={14} />, destructive: true },
             ]}
             onSelect={(key) => {
-              if (key === "switch-employee") onRoleChange("employee");
-              if (key === "switch-manager")  onRoleChange("manager");
-              if (key === "switch-hr")       onRoleChange("hr");
+              if (key === "profile") navigate("/profile");
+              if (key === "logout") onLogout();
             }}
           />
         )}
@@ -209,7 +184,7 @@ function SidebarNav({ role, activeKey, onNavigate, user, onRoleChange, collapsed
 
 interface TopbarProps {
   title: string;
-  user: CurrentUser;
+  user: ShellUser;
   onMenuToggle?: () => void;
   showMenuButton?: boolean;
   actions?: ReactNode;
@@ -236,17 +211,7 @@ function Topbar({ title, user, onMenuToggle, showMenuButton, actions }: TopbarPr
       {/* Right actions */}
       <div className="flex items-center gap-2 shrink-0">
         {actions}
-
-        {/* Notification bell */}
-        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-secondary hover:bg-surface-alt transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
-          <Bell size={17} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-600 border border-white" />
-        </button>
-
-        {/* Role badge */}
         <Badge variant="brand" size="sm">{roleLabels[user.role]}</Badge>
-
-        {/* Avatar */}
         <Avatar name={user.name} size="sm" />
       </div>
     </header>
@@ -254,7 +219,7 @@ function Topbar({ title, user, onMenuToggle, showMenuButton, actions }: TopbarPr
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGE TITLE (reusable heading inside content area)
+// PAGE HEADER (reusable heading inside content area)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function PageHeader({
@@ -299,28 +264,18 @@ export function PageHeader({
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ShellProps {
-  role: Role;
-  user: CurrentUser;
-  onRoleChange: (role: Role) => void;
-  activeKey: string;
-  onNavigate: (key: string) => void;
+  user: ShellUser;
+  onLogout: () => void;
   pageTitle: string;
   topbarActions?: ReactNode;
   children: ReactNode;
 }
 
-export function Shell({
-  role,
-  user,
-  onRoleChange,
-  activeKey,
-  onNavigate,
-  pageTitle,
-  topbarActions,
-  children,
-}: ShellProps) {
+export function Shell({ user, onLogout, pageTitle, topbarActions, children }: ShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const items = navConfig[user.role];
 
   return (
     <div className="flex h-screen overflow-hidden bg-page font-sans">
@@ -332,14 +287,11 @@ export function Shell({
         )}
       >
         <SidebarNav
-          role={role}
-          activeKey={activeKey}
-          onNavigate={onNavigate}
           user={user}
-          onRoleChange={(r) => { onRoleChange(r); }}
+          onLogout={onLogout}
           collapsed={sidebarCollapsed}
         />
-        {/* Collapse toggle — anchored to sidebar's right edge, always correct regardless of width */}
+        {/* Collapse toggle */}
         <button
           onClick={() => setSidebarCollapsed((v) => !v)}
           className="absolute bottom-16 -right-2.5 border border-border bg-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm text-text-muted hover:text-text-primary transition-colors duration-150 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
@@ -358,11 +310,9 @@ export function Shell({
           />
           <aside className="relative z-10 w-64 bg-white border-r border-border flex flex-col">
             <SidebarNav
-              role={role}
-              activeKey={activeKey}
-              onNavigate={(key) => { onNavigate(key); setMobileSidebarOpen(false); }}
               user={user}
-              onRoleChange={(r) => { onRoleChange(r); setMobileSidebarOpen(false); }}
+              onLogout={onLogout}
+              onNavigate={() => setMobileSidebarOpen(false)}
             />
           </aside>
         </div>
@@ -387,27 +337,22 @@ export function Shell({
 
         {/* ── Mobile bottom nav ── */}
         <nav className="lg:hidden border-t border-border bg-white flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,0px)] shrink-0">
-          {navConfig[role].slice(0, 4).map((item) => {
-            const isActive = activeKey === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => onNavigate(item.key)}
-                className={cn(
+          {items.slice(0, 4).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                cn(
                   "flex flex-col items-center gap-0.5 py-2 px-3 min-w-[52px] rounded-lg transition-colors duration-150 focus-visible:outline-none",
                   isActive ? "text-brand-600" : "text-text-muted"
-                )}
-              >
-                <span className="relative">
-                  {item.icon}
-                  {item.badge && item.badge > 0 && (
-                    <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-brand-600" />
-                  )}
-                </span>
-                <span className="text-[10px] font-semibold">{item.label}</span>
-              </button>
-            );
-          })}
+                )
+              }
+            >
+              <span className="relative">{item.icon}</span>
+              <span className="text-[10px] font-semibold">{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
       </div>
     </div>

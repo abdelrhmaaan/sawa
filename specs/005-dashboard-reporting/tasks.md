@@ -12,12 +12,12 @@
 
 ## Phase 1: Setup
 
-- [ ] T-005-01 Extract reusable scoped-queryset helpers (requests + timesheets) into `backend/core/` so `views.py` aggregates never touch `objects.all()` — refactor only, no behavior change
-- [ ] T-005-02 [P] Add dashboard + notifications API helpers to `frontend/src/lib/api.ts`
+- [x] T-005-01 Extract reusable scoped-queryset helpers (requests + timesheets) into `backend/core/` so `views.py` aggregates never touch `objects.all()` — refactor only, no behavior change
+- [x] T-005-02 [P] Add dashboard + notifications API helpers to `frontend/src/lib/api.ts`
 
 ## Phase 2: Foundational
 
-- [ ] T-005-03 Register `GET /api/dashboard/` and `notifications/` routes in `backend/core/views.py` + `backend/config/urls.py`
+- [x] T-005-03 Register `GET /api/dashboard/` and `notifications/` routes in `backend/core/views.py` + `backend/config/urls.py`
 
 **Checkpoint**: endpoints wired, returning stubs — story work can start.
 
@@ -29,14 +29,14 @@
 
 ### Tests for User Story 1 — write FIRST, ensure they FAIL
 
-- [ ] T-005-04 [P] [US1] Payload-shape tests in `backend/core/tests/test_dashboard.py`: employee payload has exactly `my_requests`/`my_entries`/`my_hours_this_week` (no `team`/`org` keys); manager adds `team{pending_requests,pending_timesheets,team_hours_this_week}`; hr adds `org{pending_requests,pending_timesheets,hours_this_week,users_by_role}`
-- [ ] T-005-05 [P] [US1] Numbers tests in `test_dashboard.py`: own drafts count in `my_*`; `team` pending = only submitted items the caller may approve (direct reports); `team_hours_this_week` = reports' non-draft entries this ISO week; hr `org` pending excludes HR's own items; `my_hours_this_week` sums all own entries this week regardless of status
-- [ ] T-005-06 [P] [US1] Attack test in `test_dashboard.py`: with pending items under manager B, manager A's `team` numbers exclude them entirely; unauthenticated → 401
+- [x] T-005-04 [P] [US1] Payload-shape tests in `backend/core/tests/test_dashboard.py`: employee payload has exactly `my_requests`/`my_entries`/`my_hours_this_week` (no `team`/`org` keys); manager adds `team{pending_requests,pending_timesheets,team_hours_this_week}`; hr adds `org{pending_requests,pending_timesheets,hours_this_week,users_by_role}`
+- [x] T-005-05 [P] [US1] Numbers tests in `test_dashboard.py`: own drafts count in `my_*`; `team` pending = only submitted items the caller may approve (direct reports); `team_hours_this_week` = reports' non-draft entries this ISO week; hr `org` pending excludes HR's own items; `my_hours_this_week` sums all own entries this week regardless of status
+- [x] T-005-06 [P] [US1] Attack test in `test_dashboard.py`: with pending items under manager B, manager A's `team` numbers exclude them entirely; unauthenticated → 401
 
 ### Implementation for User Story 1
 
-- [ ] T-005-07 [US1] Implement the aggregate in `backend/core/views.py` using the scoped helpers (T-005-01): status `Count` groups for own items; `Sum(hours)` filtered to ISO-week Mon–Sun; role-gated `team`/`org` sections omitted (not empty) for lower roles
-- [ ] T-005-08 [US1] `frontend/src/pages/DashboardPage.tsx`: `StatCard`s per returned section + quick actions (New request → `/requests/new`, Log time → `/timesheets/new`, Approvals → `/approvals` for manager/HR); loading/empty/error states; make it the `/` route in `App.tsx`
+- [x] T-005-07 [US1] Implement the aggregate in `backend/core/views.py` using the scoped helpers (T-005-01): status `Count` groups for own items; `Sum(hours)` filtered to ISO-week Mon–Sun; role-gated `team`/`org` sections omitted (not empty) for lower roles
+- [x] T-005-08 [US1] `frontend/src/pages/DashboardPage.tsx`: `StatCard`s per returned section + quick actions (New request → `/requests/new`, Log time → `/timesheets/new`, Approvals → `/approvals` for manager/HR); loading/empty/error states; make it the `/` route in `App.tsx`
 
 **Checkpoint**: each role sees correct, scope-safe numbers on `/`.
 
@@ -66,8 +66,8 @@
 ## Phase 5: Polish & Cross-Cutting Concerns
 
 - [ ] T-005-16 [P] Update `docs/api.md` (dashboard + notifications rows, permission matrix) and `docs/database.md` (`Notification` model, marked optional)
-- [ ] T-005-17 [P] UX states + responsive pass (375/768/1280) on `DashboardPage.tsx`
-- [ ] T-005-18 Run full `pytest` green; smoke: each role's dashboard on seeded data
+- [x] T-005-17 [P] UX states + responsive pass (375/768/1280) on `DashboardPage.tsx`
+- [x] T-005-18 Run full `pytest` green; smoke: each role's dashboard on seeded data
 - [ ] T-005-19 Log AI usage for this feature in `docs/ai-usage.md`
 
 ---
