@@ -33,7 +33,7 @@
 - [x] T-002-09 Add `User.clean()` in `backend/accounts/models.py`: reject `manager == self` and walk the manager chain to reject cycles
 - [x] T-002-10 Create `backend/core/` app: `permissions.py` (`IsHR`, `IsManagerOrHR`, `get_approver(user)` → owner's direct manager else HR, never self) and `pagination.py` (`StandardPagination`)
 - [x] T-002-11 Register `User` in `backend/accounts/admin.py` (fieldsets incl. role/department/manager, list filters by role/department) so HR (`is_staff`) manages users via `/admin/`
-- [x] T-002-12 Write `backend/accounts/management/commands/seed_demo.py`: idempotent (`update_or_create`) — 1 HR (`is_staff=True`), 2 managers (no manager), 4 employees (2 per manager); password from `SEED_DEMO_PASSWORD` env; leave extension points for 003/004 sample data
+- [x] T-002-12 Write `backend/accounts/management/commands/seed_demo.py`: idempotent (`update_or_create`) — 2 HR (`is_staff=True`; second HR needed because nobody approves their own items and HR items have no manager), 2 managers (no manager), 4 employees (2 per manager); password from `SEED_DEMO_PASSWORD` env; leave extension points for 003/004 sample data
 - [x] T-002-13 [P] Frontend plumbing: add `react-router` dependency; create fetch wrapper `frontend/src/lib/api.ts` (attach in-memory access token; on 401 retry once after refreshing via localStorage refresh token, else force logout)
 - [x] T-002-14 Create `frontend/src/lib/auth.tsx` `AuthContext`/`useAuth`: `login`, `logout`, `user` state; access token in memory, refresh token in localStorage
 

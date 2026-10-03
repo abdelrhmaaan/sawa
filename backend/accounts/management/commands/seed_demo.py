@@ -24,11 +24,17 @@ class Command(BaseCommand):
         hr = self._upsert(
             "hr", "Huda", "Rahim", User.Role.HR, is_staff=True, department="People"
         )
+        hr2 = self._upsert(
+            "hr2", "Rana", "Youssef", User.Role.HR, is_staff=True, department="People"
+        )
         # HR gets admin access to manage users (no superuser needed).
+        # Two HR users are seeded so HR-owned items are decidable: nobody
+        # may approve their own item, and HR's items have no manager.
         user_perms = Permission.objects.filter(
             content_type=ContentType.objects.get_for_model(User)
         )
         hr.user_permissions.set(user_perms)
+        hr2.user_permissions.set(user_perms)
 
         manager_a = self._upsert(
             "manager.a", "Layla", "Nasser", User.Role.MANAGER, department="Engineering"
@@ -47,7 +53,7 @@ class Command(BaseCommand):
         self._seed_timesheets(password)
 
         emails = [f"{local}@{DEMO_DOMAIN}" for local in
-                  ("hr", "manager.a", "manager.b", "sara", "karim", "mona", "tarek")]
+                  ("hr", "hr2", "manager.a", "manager.b", "sara", "karim", "mona", "tarek")]
         self.stdout.write(
             self.style.SUCCESS(
                 "Seeded demo org (idempotent). Emails: " + ", ".join(emails)
