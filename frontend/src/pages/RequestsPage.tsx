@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { ClipboardList, Plus } from "lucide-react";
 
@@ -16,32 +17,53 @@ import {
 import { PageHeader } from "@/shell/Shell";
 import { listRequests } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { formatDate } from "@/lib/format";
 import {
-  requestTypeLabels,
   type EmployeeRequest,
   type Paginated,
   type RequestStatus,
   type RequestType,
 } from "@/lib/types";
 
+export { formatDate };
+
 const PAGE_SIZE = 20;
 
-const statusOptions: [RequestStatus, string][] = [
-  ["draft", "Draft"],
-  ["submitted", "Submitted"],
-  ["approved", "Approved"],
-  ["rejected", "Rejected"],
-  ["returned", "Returned"],
+const statusValues: RequestStatus[] = [
+  "draft",
+  "submitted",
+  "approved",
+  "rejected",
+  "returned",
 ];
 
-const sortOptions: [string, string][] = [
-  ["-created_at", "Newest first"],
-  ["created_at", "Oldest first"],
-  ["-updated_at", "Recently updated"],
-  ["updated_at", "Least recently updated"],
-  ["status", "Status A→Z"],
-  ["-status", "Status Z→A"],
+const typeValues: RequestType[] = [
+  "leave",
+  "equipment",
+  "wfh",
+  "hr_service",
+  "general",
 ];
+
+const sortValues = [
+  "-created_at",
+  "created_at",
+  "-updated_at",
+  "updated_at",
+  "status",
+  "-status",
+] as const;
+
+type RequestsKey = `requests.${keyof (typeof import("@/i18n/locales/en.json"))["requests"]}`;
+
+const sortKeys: Record<(typeof sortValues)[number], RequestsKey> = {
+  "-created_at": "requests.sortNewest",
+  created_at: "requests.sortOldest",
+  "-updated_at": "requests.sortUpdated",
+  updated_at: "requests.sortStale",
+  status: "requests.sortStatusAsc",
+  "-status": "requests.sortStatusDesc",
+};
 
 interface Filters {
   status: RequestStatus | "";
@@ -61,16 +83,8 @@ const defaultFilters: Filters = {
   mine: false,
 };
 
-export function formatDate(iso: string | null | undefined) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export default function RequestsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const isApprover = user?.role === "manager" || user?.role === "hr";
@@ -122,15 +136,15 @@ export default function RequestsPage() {
   return (
     <div>
       <PageHeader
-        title="My requests"
-        description="Everything you've asked for — and what your team has asked of you."
+        title={t("requests.title")}
+        description={t("requests.description")}
         action={
           <Button
             size="sm"
             iconLeft={<Plus size={14} />}
             onClick={() => navigate("/requests/new")}
           >
-            New request
+            {t("common.newRequest")}
           </Button>
         }
       />
@@ -143,66 +157,66 @@ export default function RequestsPage() {
             active={filters.mine ? "mine" : "team"}
             onChange={(key) => patchFilters({ mine: key === "mine" })}
             tabs={[
-              { key: "team", label: "Team" },
-              { key: "mine", label: "Mine" },
+              { key: "team", label: t("requests.team") },
+              { key: "mine", label: t("requests.mine") },
             ]}
           />
         )}
         <div className="w-40">
           <Select
-            aria-label="Filter by status"
+            aria-label={t("requests.filterStatus")}
             value={filters.status}
             onChange={(e) =>
               patchFilters({ status: e.target.value as RequestStatus | "" })
             }
           >
-            <option value="">All statuses</option>
-            {statusOptions.map(([v, l]) => (
+            <option value="">{t("requests.allStatuses")}</option>
+            {statusValues.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(`status.${v}`)}
               </option>
             ))}
           </Select>
         </div>
         <div className="w-44">
           <Select
-            aria-label="Filter by type"
+            aria-label={t("requests.filterType")}
             value={filters.type}
             onChange={(e) =>
               patchFilters({ type: e.target.value as RequestType | "" })
             }
           >
-            <option value="">All types</option>
-            {Object.entries(requestTypeLabels).map(([v, l]) => (
+            <option value="">{t("requests.allTypes")}</option>
+            {typeValues.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(`requestType.${v}`)}
               </option>
             ))}
           </Select>
         </div>
         <div className="w-40">
           <DateInput
-            aria-label="Created after"
+            aria-label={t("requests.createdAfter")}
             value={filters.created_after}
             onChange={(e) => patchFilters({ created_after: e.target.value })}
           />
         </div>
         <div className="w-40">
           <DateInput
-            aria-label="Created before"
+            aria-label={t("requests.createdBefore")}
             value={filters.created_before}
             onChange={(e) => patchFilters({ created_before: e.target.value })}
           />
         </div>
-        <div className="w-48 ml-auto">
+        <div className="w-48 ms-auto">
           <Select
-            aria-label="Sort"
+            aria-label={t("requests.sort")}
             value={filters.ordering}
             onChange={(e) => patchFilters({ ordering: e.target.value })}
           >
-            {sortOptions.map(([v, l]) => (
+            {sortValues.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(sortKeys[v])}
               </option>
             ))}
           </Select>
@@ -221,11 +235,11 @@ export default function RequestsPage() {
       ) : !data || data.results.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={22} />}
-          title="No requests found"
+          title={t("requests.emptyTitle")}
           description={
             filters.status || filters.type || filters.created_after || filters.created_before
-              ? "Nothing matches these filters. Try widening them."
-              : "You haven't made any requests yet."
+              ? t("requests.emptyFiltered")
+              : t("requests.emptyMine")
           }
           action={
             <Button
@@ -233,7 +247,7 @@ export default function RequestsPage() {
               iconLeft={<Plus size={14} />}
               onClick={() => navigate("/requests/new")}
             >
-              New request
+              {t("common.newRequest")}
             </Button>
           }
         />
@@ -243,38 +257,38 @@ export default function RequestsPage() {
             columns={[
               {
                 key: "type",
-                header: "Type",
+                header: t("requests.colType"),
                 render: (r) => (
                   <span className="text-text-secondary">
-                    {requestTypeLabels[r.type]}
+                    {t(`requestType.${r.type}`)}
                   </span>
                 ),
               },
               {
                 key: "title",
-                header: "Title",
+                header: t("requests.colTitle"),
                 render: (r) => (
-                  <span className="font-medium">{r.title}</span>
+                  <span className="font-medium" dir="auto">{r.title}</span>
                 ),
               },
               {
                 key: "owner",
-                header: "Owner",
+                header: t("requests.colOwner"),
                 render: (r) => (
-                  <span className="text-text-muted">
+                  <span className="text-text-muted" dir="auto">
                     {r.owner?.name ?? "—"}
                   </span>
                 ),
               },
               {
                 key: "status",
-                header: "Status",
+                header: t("requests.colStatus"),
                 align: "center",
                 render: (r) => <StatusBadge status={r.status} />,
               },
               {
                 key: "created_at",
-                header: "Created",
+                header: t("requests.colCreated"),
                 align: "right",
                 render: (r) => (
                   <span className="text-text-muted">
@@ -290,8 +304,8 @@ export default function RequestsPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between gap-3 mt-4">
             <p className="text-caption">
-              Page {page} of {totalPages} · {data.count}{" "}
-              {data.count === 1 ? "request" : "requests"}
+              {t("pagination.pageOf", { page, pages: totalPages })} ·{" "}
+              {t("pagination.requests", { count: data.count })}
             </p>
             <div className="flex gap-2">
               <Button
@@ -300,7 +314,7 @@ export default function RequestsPage() {
                 disabled={!data.previous}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                Previous
+                {t("common.previous")}
               </Button>
               <Button
                 variant="secondary"
@@ -308,7 +322,7 @@ export default function RequestsPage() {
                 disabled={!data.next}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("common.next")}
               </Button>
             </div>
           </div>

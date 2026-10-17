@@ -11,6 +11,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { Loader2, Upload, Check, ChevronDown, AlertCircle, CheckCircle, Info, AlertTriangle, X, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {iconLeft && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none flex items-center">
+            <span className="absolute start-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none flex items-center">
               {iconLeft}
             </span>
           )}
@@ -129,20 +130,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "w-full h-9 bg-white border rounded-md text-sm text-text-primary placeholder:text-text-muted transition-all duration-150",
               "focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-0 focus:border-brand-600",
               error ? "border-error focus:ring-error" : "border-border hover:border-border-strong",
-              iconLeft ? "pl-9" : "pl-3",
-              iconRight ? "pr-9" : "pr-3",
+              iconLeft ? "ps-9" : "ps-3",
+              iconRight ? "pe-9" : "pe-3",
               props.disabled && "opacity-50 cursor-not-allowed bg-surface-alt",
               className
             )}
             {...props}
           />
           {iconRight && !error && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none flex items-center">
+            <span className="absolute end-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none flex items-center">
               {iconRight}
             </span>
           )}
           {error && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-error flex items-center">
+            <span className="absolute end-3 top-1/2 -translate-y-1/2 text-error flex items-center">
               <AlertCircle size={14} />
             </span>
           )}
@@ -193,7 +194,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             className={cn(
-              "w-full h-9 bg-white border rounded-md text-sm text-text-primary transition-all duration-150 appearance-none pr-9 pl-3",
+              "w-full h-9 bg-white border rounded-md text-sm text-text-primary transition-all duration-150 appearance-none pe-9 ps-3",
               "focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600",
               error ? "border-error" : "border-border hover:border-border-strong",
               props.disabled && "opacity-50 cursor-not-allowed bg-surface-alt",
@@ -204,7 +205,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {placeholder && <option value="">{placeholder}</option>}
             {children}
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          <ChevronDown size={14} className="absolute end-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         </div>
         {error ? (
           <p className="text-caption text-error-text">{error}</p>
@@ -319,6 +320,7 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ label, hint, error, accept, multiple, onChange }: FileUploadProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [fileNames, setFileNames] = useState<string[]>([]);
@@ -360,9 +362,10 @@ export function FileUpload({ label, hint, error, accept, multiple, onChange }: F
         ) : (
           <>
             <p className="text-body-sm font-medium text-text-secondary">
-              <span className="text-brand-600">Click to upload</span> or drag and drop
+              <span className="text-brand-600">{t("common.clickToUpload")}</span>{" "}
+              {t("common.dragAndDrop")}
             </p>
-            <p className="text-caption mt-0.5">{hint ?? "Any file up to 10MB"}</p>
+            <p className="text-caption mt-0.5">{hint ?? t("common.fileHint")}</p>
           </>
         )}
       </div>
@@ -532,20 +535,22 @@ export function Badge({ variant = "default", size = "md", className, children, d
 
 type StatusType = "draft" | "pending" | "submitted" | "approved" | "rejected" | "returned" | "active" | "inactive";
 
-const statusMap: Record<StatusType, { variant: BadgeVariant; label: string }> = {
-  draft:     { variant: "neutral",  label: "Draft" },
-  pending:   { variant: "warning",  label: "Pending" },
-  submitted: { variant: "warning",  label: "Submitted" },
-  approved:  { variant: "success",  label: "Approved" },
-  rejected:  { variant: "error",    label: "Rejected" },
-  returned:  { variant: "default",  label: "Returned" },
-  active:    { variant: "success",  label: "Active" },
-  inactive:  { variant: "neutral",  label: "Inactive" },
+const statusMap: Record<StatusType, BadgeVariant> = {
+  draft:     "neutral",
+  pending:   "warning",
+  submitted: "warning",
+  approved:  "success",
+  rejected:  "error",
+  returned:  "default",
+  active:    "success",
+  inactive:  "neutral",
 };
 
 export function StatusBadge({ status }: { status: StatusType }) {
-  const { variant, label } = statusMap[status];
-  return <Badge variant={variant} dot>{label}</Badge>;
+  const { t } = useTranslation();
+  return (
+    <Badge variant={statusMap[status]} dot>{t(`status.${status}`)}</Badge>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -695,6 +700,7 @@ interface TableProps<T extends Record<string, unknown>> {
 }
 
 export function Table<T extends Record<string, unknown>>({ columns, data, loading, emptyMessage, onRowClick }: TableProps<T>) {
+  const { t } = useTranslation();
   return (
     <div className="border border-border rounded-xl overflow-hidden bg-white">
       <div className="overflow-x-auto">
@@ -706,7 +712,7 @@ export function Table<T extends Record<string, unknown>>({ columns, data, loadin
                   key={String(col.key)}
                   className={cn(
                     "px-4 py-2.5 text-overline text-text-muted font-semibold",
-                    col.align === "right" && "text-right",
+                    col.align === "right" && "text-end",
                     col.align === "center" && "text-center"
                   )}
                   style={{ width: col.width }}
@@ -726,7 +732,7 @@ export function Table<T extends Record<string, unknown>>({ columns, data, loadin
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center text-body-sm text-text-muted">
-                  {emptyMessage ?? "No data found."}
+                  {emptyMessage ?? t("common.noData")}
                 </td>
               </tr>
             ) : (
@@ -744,7 +750,7 @@ export function Table<T extends Record<string, unknown>>({ columns, data, loadin
                       key={String(col.key)}
                       className={cn(
                         "px-4 py-3 text-body-sm text-text-primary",
-                        col.align === "right" && "text-right",
+                        col.align === "right" && "text-end",
                         col.align === "center" && "text-center"
                       )}
                     >
@@ -907,7 +913,9 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 // LOADING STATE
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function LoadingState({ message = "Loading…" }: { message?: string }) {
+export function LoadingState({ message }: { message?: string }) {
+  const { t } = useTranslation();
+  message = message ?? t("common.loading");
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-3">
       <Loader2 size={24} className="animate-spin text-brand-600" />
@@ -927,10 +935,13 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Something went wrong",
-  description = "We couldn't load this content. Please try again.",
+  title,
+  description,
   onRetry,
 }: ErrorStateProps) {
+  const { t } = useTranslation();
+  title = title ?? t("common.errorTitle");
+  description = description ?? t("common.errorDescription");
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
       <div className="w-12 h-12 rounded-xl bg-error-subtle border border-error-border flex items-center justify-center mb-4 text-error">
@@ -940,7 +951,7 @@ export function ErrorState({
       <p className="text-body-sm text-text-secondary max-w-sm mb-5">{description}</p>
       {onRetry && (
         <Button variant="secondary" size="sm" onClick={onRetry}>
-          Try again
+          {t("common.tryAgain")}
         </Button>
       )}
     </div>
@@ -1035,7 +1046,7 @@ export function FormField({ label, hint, error, required, children }: {
       {label && (
         <p className="text-label text-text-primary">
           {label}
-          {required && <span className="text-error ml-0.5">*</span>}
+          {required && <span className="text-error ms-0.5">*</span>}
         </p>
       )}
       {children}
@@ -1073,8 +1084,8 @@ export function Toggle({ checked, onChange, label, disabled }: ToggleProps) {
         )}
       >
         <span className={cn(
-          "absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200",
-          checked && "translate-x-4"
+          "absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200",
+          checked && "translate-x-4 rtl:-translate-x-4"
         )} />
       </button>
       {label && <span className="text-body-sm font-medium text-text-primary">{label}</span>}

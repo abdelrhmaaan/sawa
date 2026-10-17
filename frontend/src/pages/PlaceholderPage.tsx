@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Inbox } from "lucide-react";
 
 import { EmptyState } from "@/components/ui";
@@ -7,13 +8,14 @@ export default function PlaceholderPage({ title, description }: {
   title: string;
   description?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       <PageHeader title={title} />
       <EmptyState
         icon={<Inbox size={22} />}
-        title={`${title} — coming soon`}
-        description={description ?? "This screen is being built. Check back in the next release."}
+        title={t("errors.comingSoon", { title })}
+        description={description ?? t("errors.comingSoonDescription")}
       />
     </div>
   );

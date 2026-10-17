@@ -60,6 +60,11 @@
     - Request activity reports (volume, approval rate, average resolution time)
     - Exportable views for HR
 
+11. **Localization — English + Arabic** *(scope change 2026-10-17, constitution v1.1.0, `specs/006-arabic-localization/`)*
+    - Language toggle (English/Arabic), remembered per browser
+    - Full right-to-left layout and Arabic typeface in Arabic
+    - Server messages and notifications shown in the reader's language
+
 ---
 
 ## Out of Scope (What We're NOT Building in MVP)
@@ -70,7 +75,7 @@
 | Mobile native app | Responsive web covers mobile; native app is a future enhancement |
 | Payroll integration | Out of scope; timesheets provide data but payroll processing is separate |
 | Calendar integration (Google/Outlook) | Nice-to-have but not essential for MVP |
-| Multi-language support | English first; Arabic support can be added post-MVP |
+| Languages beyond English and Arabic | Arabic moved into scope on 2026-10-17 (module 11); other languages remain future work |
 | Custom workflow builder | Fixed approval flows (Employee → Manager → HR if needed) are sufficient |
 | File upload/attachment storage | Notes and descriptions in MVP; file attachments require object storage setup |
 | Advanced analytics/BI | Basic reporting covers MVP; advanced analytics is a future phase |

@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import type {
   AppNotification,
   DashboardData,
@@ -25,7 +26,7 @@ export class ApiError extends Error {
   fieldErrors?: Record<string, string[]>;
 
   constructor(status: number, detail?: string, fieldErrors?: Record<string, string[]>) {
-    super(detail ?? `Request failed (${status})`);
+    super(detail ?? i18n.t("errors.requestFailed", { status }));
     this.status = status;
     this.detail = detail;
     this.fieldErrors = fieldErrors;
@@ -114,7 +115,9 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     if (qs) url += `?${qs}`;
   }
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    "Accept-Language": i18n.resolvedLanguage ?? "en",
+  };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
@@ -129,7 +132,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     if (ok) return apiFetch<T>(path, { ...options, retried: true });
     clearTokens();
     onAuthFailure?.();
-    throw new ApiError(401, "Session expired. Please sign in again.");
+    throw new ApiError(401, i18n.t("errors.sessionExpired"));
   }
 
   if (res.status === 204) return undefined as T;

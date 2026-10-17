@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import {
   Check,
@@ -34,27 +35,31 @@ import {
   type RequestAction,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  requestTypeLabels,
-  type EmployeeRequestDetail,
-} from "@/lib/types";
+import type { EmployeeRequestDetail } from "@/lib/types";
 import { formatDate } from "./RequestsPage";
 
 const EDITABLE = ["draft", "returned"];
 const FINAL = ["approved", "rejected"];
 
+const decisionToastKeys = {
+  approve: "requests.decidedApproved",
+  reject: "requests.decidedRejected",
+  return: "requests.decidedReturned",
+} as const;
+
 const actionMeta: Record<
   RequestAction,
-  { label: string; icon: ReactNode; variant: "primary" | "secondary" | "destructive" }
+  { key: "common.approve" | "common.return" | "common.reject"; icon: ReactNode; variant: "primary" | "secondary" | "destructive" }
 > = {
-  approve: { label: "Approve", icon: <Check size={14} />, variant: "primary" },
-  return: { label: "Return", icon: <RotateCcw size={14} />, variant: "secondary" },
-  reject: { label: "Reject", icon: <X size={14} />, variant: "destructive" },
+  approve: { key: "common.approve", icon: <Check size={14} />, variant: "primary" },
+  return: { key: "common.return", icon: <RotateCcw size={14} />, variant: "secondary" },
+  reject: { key: "common.reject", icon: <X size={14} />, variant: "destructive" },
 };
 
 export default function RequestDetailPage() {
   const { id } = useParams();
   const requestId = Number(id);
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -89,7 +94,7 @@ export default function RequestDetailPage() {
         err.detail ?? err.fieldErrors?.detail?.[0] ?? fallback
       );
     } else {
-      setActionError("Couldn't reach the server. Please try again.");
+      setActionError(t("common.networkError"));
     }
   };
 
@@ -99,9 +104,9 @@ export default function RequestDetailPage() {
     setActionError(null);
     try {
       setData(await submitRequest(data.id));
-      toast({ variant: "success", title: "Request submitted for approval." });
+      toast({ variant: "success", title: t("requests.submittedToast") });
     } catch (err) {
-      fail(err, "Couldn't submit the request.");
+      fail(err, t("requests.submitError"));
     } finally {
       setSubmitting(false);
     }
@@ -112,11 +117,11 @@ export default function RequestDetailPage() {
     setDeleting(true);
     try {
       await deleteRequest(data.id);
-      toast({ variant: "success", title: "Request deleted." });
+      toast({ variant: "success", title: t("requests.deletedToast") });
       navigate("/requests");
     } catch (err) {
       setConfirmDelete(false);
-      fail(err, "Couldn't delete the request.");
+      fail(err, t("requests.deleteError"));
     } finally {
       setDeleting(false);
     }
@@ -129,7 +134,7 @@ export default function RequestDetailPage() {
       setData(await decideRequest(data.id, decision, comment));
       toast({
         variant: "success",
-        title: `Request ${decision === "return" ? "returned" : `${decision}d`}.`,
+        title: t(decisionToastKeys[decision]),
       });
     } finally {
       setDeciding(false);
@@ -139,8 +144,8 @@ export default function RequestDetailPage() {
   if (state === "loading") {
     return (
       <div>
-        <PageHeader title="Request" breadcrumb={[{ label: "My requests" }, { label: `#${id}` }]} />
-        <LoadingState message="Loading request…" />
+        <PageHeader title={t("requests.detailTitle")} breadcrumb={[{ label: t("requests.breadcrumbMyRequests") }, { label: `#${id}` }]} />
+        <LoadingState message={t("requests.loadingRequest")} />
       </div>
     );
   }
@@ -148,14 +153,14 @@ export default function RequestDetailPage() {
   if (state === "notfound") {
     return (
       <div>
-        <PageHeader title="Request" breadcrumb={[{ label: "My requests" }, { label: `#${id}` }]} />
+        <PageHeader title={t("requests.detailTitle")} breadcrumb={[{ label: t("requests.breadcrumbMyRequests") }, { label: `#${id}` }]} />
         <EmptyState
           icon={<ClipboardList size={22} />}
-          title="Request not found"
-          description="It doesn't exist or isn't visible to you."
+          title={t("requests.notFoundTitle")}
+          description={t("requests.notFoundDescription")}
           action={
             <Button size="sm" variant="secondary" onClick={() => navigate("/requests")}>
-              Back to my requests
+              {t("requests.backToRequests")}
             </Button>
           }
         />
@@ -166,7 +171,7 @@ export default function RequestDetailPage() {
   if (state === "error" || !data) {
     return (
       <div>
-        <PageHeader title="Request" breadcrumb={[{ label: "My requests" }, { label: `#${id}` }]} />
+        <PageHeader title={t("requests.detailTitle")} breadcrumb={[{ label: t("requests.breadcrumbMyRequests") }, { label: `#${id}` }]} />
         <ErrorState onRetry={load} />
       </div>
     );
@@ -185,7 +190,7 @@ export default function RequestDetailPage() {
     <div>
       <PageHeader
         title={data.title}
-        breadcrumb={[{ label: "My requests" }, { label: `#${data.id}` }]}
+        breadcrumb={[{ label: t("requests.breadcrumbMyRequests") }, { label: `#${data.id}` }]}
         action={<StatusBadge status={data.status} />}
       />
 
@@ -199,31 +204,31 @@ export default function RequestDetailPage() {
         {/* Details */}
         <Card className="lg:col-span-2">
           <CardHeader
-            title="Details"
-            action={<Badge variant="brand" size="sm">{requestTypeLabels[data.type]}</Badge>}
+            title={t("requests.details")}
+            action={<Badge variant="brand" size="sm">{t(`requestType.${data.type}`)}</Badge>}
           />
-          <p className="text-body-sm text-text-primary whitespace-pre-wrap mb-5">
+          <p className="text-body-sm text-text-primary whitespace-pre-wrap mb-5" dir="auto">
             {data.description}
           </p>
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 border-t border-divider pt-4">
             <div>
-              <dt className="text-overline text-text-muted">Owner</dt>
+              <dt className="text-overline text-text-muted">{t("requests.ownerLabel")}</dt>
               <dd className="text-body-sm text-text-primary mt-0.5">
                 {data.owner?.name ?? "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-overline text-text-muted">Created</dt>
+              <dt className="text-overline text-text-muted">{t("requests.createdLabel")}</dt>
               <dd className="text-body-sm text-text-primary mt-0.5">{formatDate(data.created_at)}</dd>
             </div>
             <div>
-              <dt className="text-overline text-text-muted">Submitted</dt>
+              <dt className="text-overline text-text-muted">{t("requests.submittedLabel")}</dt>
               <dd className="text-body-sm text-text-primary mt-0.5">
                 {data.submitted_at ? formatDateTime(data.submitted_at) : "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-overline text-text-muted">Decided</dt>
+              <dt className="text-overline text-text-muted">{t("requests.decidedLabel")}</dt>
               <dd className="text-body-sm text-text-primary mt-0.5">
                 {data.decided_at ? formatDateTime(data.decided_at) : "—"}
               </dd>
@@ -240,7 +245,7 @@ export default function RequestDetailPage() {
                   onClick={onSubmitRequest}
                   loading={submitting}
                 >
-                  Submit
+                  {t("common.submit")}
                 </Button>
               )}
               {canEdit && (
@@ -250,7 +255,7 @@ export default function RequestDetailPage() {
                   iconLeft={<Pencil size={14} />}
                   onClick={() => navigate(`/requests/${data.id}/edit`)}
                 >
-                  Edit
+                  {t("common.edit")}
                 </Button>
               )}
               {canDelete && (
@@ -260,7 +265,7 @@ export default function RequestDetailPage() {
                   iconLeft={<Trash2 size={14} />}
                   onClick={() => setConfirmDelete(true)}
                 >
-                  Delete
+                  {t("common.delete")}
                 </Button>
               )}
               {isApprover &&
@@ -272,7 +277,7 @@ export default function RequestDetailPage() {
                     iconLeft={actionMeta[a].icon}
                     onClick={() => setDecision(a)}
                   >
-                    {actionMeta[a].label}
+                    {t(actionMeta[a].key)}
                   </Button>
                 ))}
             </div>
@@ -280,14 +285,14 @@ export default function RequestDetailPage() {
 
           {isOwner && FINAL.includes(data.status) && (
             <p className="text-caption mt-4 border-t border-divider pt-4">
-              This request is {data.status} — that decision is final.
+              {t("requests.finalNote", { status: t(`status.${data.status}`) })}
             </p>
           )}
         </Card>
 
         {/* Timeline */}
         <Card>
-          <CardHeader title="Timeline" />
+          <CardHeader title={t("requests.timeline")} />
           <Timeline history={data.history} />
         </Card>
       </div>
@@ -297,9 +302,9 @@ export default function RequestDetailPage() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         onConfirm={onDelete}
-        title="Delete this request?"
-        description="The draft will be permanently removed. This can't be undone."
-        confirmLabel="Delete"
+        title={t("requests.deleteTitle")}
+        description={t("requests.deleteDescription")}
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleting}
       />
@@ -308,7 +313,7 @@ export default function RequestDetailPage() {
       <DecisionDialog
         open={decision !== null}
         onClose={() => setDecision(null)}
-        action={decision ? actionMeta[decision].label : ""}
+        action={decision ? t(actionMeta[decision].key) : ""}
         subject={data.title}
         commentRequired={decision === "reject" || decision === "return"}
         loading={deciding}

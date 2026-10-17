@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, useLocation, useNavigate } from "react-router";
 
-import { Alert, Button, Input, LoadingState } from "@/components/ui";
+import { Alert, Button, Input } from "@/components/ui";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { SawaLogo } from "@/shell/Shell";
 import { ApiError, useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const { status, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,24 +33,27 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError("Invalid email or password.");
+        setError(t("auth.invalidCredentials"));
       } else {
-        setError("Couldn't reach the server. Check your connection and try again.");
+        setError(t("auth.networkError"));
       }
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-page flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-page flex flex-col items-center justify-center px-4 relative">
+      <div className="absolute top-4 end-4">
+        <LanguageSwitch fullLabel />
+      </div>
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-8">
           <SawaLogo />
         </div>
         <div className="bg-white border border-border rounded-xl shadow-sm p-6 md:p-8">
-          <h1 className="text-h2 text-text-primary mb-1">Sign in</h1>
+          <h1 className="text-h2 text-text-primary mb-1">{t("auth.signIn")}</h1>
           <p className="text-body-sm text-text-secondary mb-6">
-            Employee requests &amp; time tracking
+            {t("auth.subtitle")}
           </p>
 
           {error && (
@@ -58,29 +64,31 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             <Input
-              label="Email"
+              label={t("auth.email")}
               type="email"
+              dir="ltr"
               autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
+              placeholder={t("auth.emailPlaceholder")}
             />
             <Input
-              label="Password"
+              label={t("auth.password")}
               type="password"
+              dir="ltr"
               autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t("auth.passwordPlaceholder")}
             />
             <Button type="submit" fullWidth loading={submitting}>
-              Sign in
+              {t("auth.signIn")}
             </Button>
           </form>
         </div>
-        <p className="text-center text-caption mt-6">SAWA — work better, together.</p>
+        <p className="text-center text-caption mt-6">{t("auth.footer")}</p>
       </div>
     </div>
   );

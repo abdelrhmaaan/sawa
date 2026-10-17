@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { Clock, Pencil, Plus, Send, Trash2 } from "lucide-react";
 
@@ -26,6 +27,7 @@ import {
   submitTimesheetEntry,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { formatHours, formatWeekday } from "@/lib/format";
 import {
   userDisplayName,
   type EntryStatus,
@@ -39,11 +41,11 @@ import TimesheetEntryForm from "./TimesheetEntryForm";
 const PAGE_SIZE = 20;
 const SUBMITTABLE: EntryStatus[] = ["draft", "returned"];
 
-const statusOptions: [EntryStatus, string][] = [
-  ["draft", "Draft"],
-  ["submitted", "Submitted"],
-  ["approved", "Approved"],
-  ["returned", "Returned"],
+const statusValues: EntryStatus[] = [
+  "draft",
+  "submitted",
+  "approved",
+  "returned",
 ];
 
 interface Filters {
@@ -65,15 +67,11 @@ function fmtTime(t: string) {
 }
 
 function fmtDay(iso: string) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatWeekday(iso);
 }
 
 export default function TimesheetsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -205,12 +203,12 @@ export default function TimesheetsPage() {
     withBusy(e.id, async () => {
       try {
         await submitTimesheetEntry(e.id);
-        toast({ variant: "success", title: "Entry submitted for review." });
+        toast({ variant: "success", title: t("timesheets.submittedToast") });
         await load();
       } catch (err) {
         toast({
           variant: "error",
-          title: "Couldn't submit the entry.",
+          title: t("timesheets.submitError"),
           description:
             err instanceof ApiError
               ? err.detail ?? err.fieldErrors?.detail?.[0]
@@ -224,14 +222,14 @@ export default function TimesheetsPage() {
     setDeleteBusy(true);
     try {
       await deleteTimesheetEntry(deleting.id);
-      toast({ variant: "success", title: "Entry deleted." });
+      toast({ variant: "success", title: t("timesheets.deletedToast") });
       setDeleting(null);
       await load();
     } catch (err) {
       setDeleting(null);
       toast({
         variant: "error",
-        title: "Couldn't delete the entry.",
+        title: t("timesheets.deleteError"),
         description:
           err instanceof ApiError
             ? err.detail ?? err.fieldErrors?.detail?.[0]
@@ -249,14 +247,14 @@ export default function TimesheetsPage() {
       const res = await bulkSubmitTimesheetEntries([...selected]);
       toast({
         variant: "success",
-        title: `${res.submitted} ${res.submitted === 1 ? "entry" : "entries"} submitted.`,
+        title: t("timesheets.bulkToast", { count: res.submitted }),
       });
       setSelected(new Set());
       await load();
     } catch (err) {
       toast({
         variant: "error",
-        title: "Bulk submit failed.",
+        title: t("timesheets.bulkError"),
         description:
           err instanceof ApiError
             ? err.detail ?? err.fieldErrors?.ids?.[0] ?? err.fieldErrors?.detail?.[0]
@@ -283,11 +281,11 @@ export default function TimesheetsPage() {
   return (
     <div>
       <PageHeader
-        title="My timesheets"
+        title={t("timesheets.title")}
         description={
           data && !loading && !error
-            ? `${data.total_hours} hours in this view.`
-            : "Your daily time entries."
+            ? t("timesheets.descriptionTotal", { total: data.total_hours })
+            : t("timesheets.descriptionFallback")
         }
         action={
           <Button
@@ -298,7 +296,7 @@ export default function TimesheetsPage() {
               setFormOpen(true);
             }}
           >
-            Log time
+            {t("common.logTime")}
           </Button>
         }
       />
@@ -307,30 +305,30 @@ export default function TimesheetsPage() {
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div className="w-40">
           <Select
-            aria-label="Filter by status"
+            aria-label={t("timesheets.filterStatus")}
             value={filters.status}
             onChange={(e) =>
               patchFilters({ status: e.target.value as EntryStatus | "" })
             }
           >
-            <option value="">All statuses</option>
-            {statusOptions.map(([v, l]) => (
+            <option value="">{t("requests.allStatuses")}</option>
+            {statusValues.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(`status.${v}`)}
               </option>
             ))}
           </Select>
         </div>
         <div className="w-40">
           <DateInput
-            aria-label="From date"
+            aria-label={t("timesheets.fromDate")}
             value={filters.date_from}
             onChange={(e) => patchFilters({ date_from: e.target.value })}
           />
         </div>
         <div className="w-40">
           <DateInput
-            aria-label="To date"
+            aria-label={t("timesheets.toDate")}
             value={filters.date_to}
             onChange={(e) => patchFilters({ date_to: e.target.value })}
           />
@@ -338,11 +336,11 @@ export default function TimesheetsPage() {
         {isApprover && (
           <div className="w-56">
             <Select
-              aria-label="Filter by owner"
+              aria-label={t("timesheets.filterOwner")}
               value={filters.owner}
               onChange={(e) => patchFilters({ owner: e.target.value })}
             >
-              <option value="">Everyone visible</option>
+              <option value="">{t("timesheets.everyoneVisible")}</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
                   {userDisplayName(u)}
@@ -357,8 +355,8 @@ export default function TimesheetsPage() {
       {!loading && !error && submittableOnPage.length > 0 && (
         <div className="flex items-center justify-between gap-3 mb-4">
           <Checkbox
-            label="Select drafts"
-            hint={`${submittableOnPage.length} submittable on this page`}
+            label={t("timesheets.selectDrafts")}
+            hint={t("timesheets.submittable", { count: submittableOnPage.length })}
             checked={allSelected}
             onChange={toggleSelectAll}
           />
@@ -370,7 +368,9 @@ export default function TimesheetsPage() {
             loading={bulkBusy}
             onClick={onBulkSubmit}
           >
-            Submit selected{selected.size > 0 ? ` (${selected.size})` : ""}
+            {selected.size > 0
+              ? t("timesheets.submitSelectedCount", { count: selected.size })
+              : t("timesheets.submitSelected")}
           </Button>
         </div>
       )}
@@ -387,11 +387,11 @@ export default function TimesheetsPage() {
       ) : !data || groups.length === 0 ? (
         <EmptyState
           icon={<Clock size={22} />}
-          title="No time entries"
+          title={t("timesheets.emptyTitle")}
           description={
             hasFilters
-              ? "Nothing matches these filters. Try widening them."
-              : "Log your first hours to see them here."
+              ? t("timesheets.emptyFiltered")
+              : t("timesheets.emptyMine")
           }
           action={
             <Button
@@ -402,7 +402,7 @@ export default function TimesheetsPage() {
                 setFormOpen(true);
               }}
             >
-              Log time
+              {t("common.logTime")}
             </Button>
           }
         />
@@ -416,7 +416,7 @@ export default function TimesheetsPage() {
                     {fmtDay(g.date)}
                   </p>
                   <p className="text-body-sm text-text-secondary tabular-nums">
-                    {g.total.toFixed(2)} h
+                    {formatHours(g.total)}
                   </p>
                 </div>
                 {g.entries.map((e) => (
@@ -440,14 +440,14 @@ export default function TimesheetsPage() {
                       {fmtTime(e.start_time)}–{fmtTime(e.end_time)}
                     </span>
                     <span className="text-body-sm font-semibold text-text-primary tabular-nums w-14">
-                      {Number(e.hours).toFixed(2)} h
+                      {formatHours(e.hours)}
                     </span>
                     {!isOwn(e) && (
-                      <span className="text-body-sm text-text-secondary">
+                      <span className="text-body-sm text-text-secondary" dir="auto">
                         {e.owner?.name ?? "—"}
                       </span>
                     )}
-                    <span className="flex-1 min-w-[120px] text-body-sm text-text-muted truncate">
+                    <span className="flex-1 min-w-[120px] text-body-sm text-text-muted truncate" dir="auto">
                       {e.note || "—"}
                     </span>
                     <StatusBadge status={e.status} />
@@ -465,7 +465,7 @@ export default function TimesheetsPage() {
                             setFormOpen(true);
                           }}
                         >
-                          Edit
+                          {t("common.edit")}
                         </Button>
                         <Button
                           size="sm"
@@ -474,7 +474,7 @@ export default function TimesheetsPage() {
                           loading={busyIds.has(e.id)}
                           onClick={() => onSubmitOne(e)}
                         >
-                          Submit
+                          {t("common.submit")}
                         </Button>
                         {e.status === "draft" && (
                           <Button
@@ -483,7 +483,7 @@ export default function TimesheetsPage() {
                             iconLeft={<Trash2 size={13} />}
                             onClick={() => setDeleting(e)}
                           >
-                            Delete
+                            {t("common.delete")}
                           </Button>
                         )}
                       </span>
@@ -497,8 +497,8 @@ export default function TimesheetsPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between gap-3 mt-4">
             <p className="text-caption">
-              Page {page} of {totalPages} · {data.count}{" "}
-              {data.count === 1 ? "entry" : "entries"}
+              {t("pagination.pageOf", { page, pages: totalPages })} ·{" "}
+              {t("pagination.entries", { count: data.count })}
             </p>
             <div className="flex gap-2">
               <Button
@@ -507,7 +507,7 @@ export default function TimesheetsPage() {
                 disabled={!data.previous}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                Previous
+                {t("common.previous")}
               </Button>
               <Button
                 variant="secondary"
@@ -515,7 +515,7 @@ export default function TimesheetsPage() {
                 disabled={!data.next}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("common.next")}
               </Button>
             </div>
           </div>
@@ -526,19 +526,18 @@ export default function TimesheetsPage() {
       <Drawer
         open={detailId !== null}
         onClose={() => setDetailId(null)}
-        title={detail ? fmtDay(detail.date) : "Entry"}
+        title={detail ? fmtDay(detail.date) : t("timesheets.entryFallback")}
         description={
           detail
             ? `${fmtTime(detail.start_time)}–${fmtTime(detail.end_time)} · ${
-                Number(detail.hours).toFixed(2)
-              } h`
+                formatHours(detail.hours)}`
             : undefined
         }
         size="sm"
       >
         {detailError ? (
           <ErrorState
-            description="Couldn't load this entry."
+            description={t("timesheets.loadEntryError")}
             onRetry={() => detailId !== null && openDetail(detailId)}
           />
         ) : !detail ? (
@@ -551,34 +550,34 @@ export default function TimesheetsPage() {
           <div className="space-y-5">
             <div className="flex items-center gap-2">
               <StatusBadge status={detail.status} />
-              <span className="text-body-sm text-text-secondary">
+              <span className="text-body-sm text-text-secondary" dir="auto">
                 {detail.owner?.name ?? "—"}
               </span>
             </div>
             {detail.note && (
               <div>
-                <p className="text-overline text-text-muted mb-1">Note</p>
-                <p className="text-body-sm text-text-primary whitespace-pre-wrap">
+                <p className="text-overline text-text-muted mb-1">{t("timesheets.noteLabel")}</p>
+                <p className="text-body-sm text-text-primary whitespace-pre-wrap" dir="auto">
                   {detail.note}
                 </p>
               </div>
             )}
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
               <div>
-                <dt className="text-overline text-text-muted">Submitted</dt>
+                <dt className="text-overline text-text-muted">{t("timesheets.submittedLabel")}</dt>
                 <dd className="text-body-sm text-text-primary mt-0.5">
                   {detail.submitted_at ? formatDateTime(detail.submitted_at) : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-overline text-text-muted">Reviewed</dt>
+                <dt className="text-overline text-text-muted">{t("timesheets.reviewedLabel")}</dt>
                 <dd className="text-body-sm text-text-primary mt-0.5">
                   {detail.reviewed_at ? formatDateTime(detail.reviewed_at) : "—"}
                 </dd>
               </div>
             </dl>
             <div>
-              <p className="text-overline text-text-muted mb-2">Timeline</p>
+              <p className="text-overline text-text-muted mb-2">{t("timesheets.timeline")}</p>
               <Timeline history={detail.history} />
             </div>
           </div>
@@ -598,13 +597,16 @@ export default function TimesheetsPage() {
         open={deleting !== null}
         onClose={() => setDeleting(null)}
         onConfirm={onDelete}
-        title="Delete this entry?"
+        title={t("timesheets.deleteTitle")}
         description={
           deleting
-            ? `${fmtDay(deleting.date)} · ${fmtTime(deleting.start_time)}–${fmtTime(deleting.end_time)} will be permanently removed.`
+            ? t("timesheets.deleteDescription", {
+                day: fmtDay(deleting.date),
+                range: `${fmtTime(deleting.start_time)}–${fmtTime(deleting.end_time)}`,
+              })
             : undefined
         }
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteBusy}
       />

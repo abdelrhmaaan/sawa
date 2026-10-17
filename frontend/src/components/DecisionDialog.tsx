@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Alert, Button, Textarea } from "@/components/ui";
 import { Modal } from "@/components/overlays";
@@ -15,6 +16,8 @@ interface DecisionDialogProps {
   loading?: boolean;
   /** Receives the comment; should perform the API call. Throw to stay open. */
   onSubmit: (comment: string) => Promise<void>;
+  /** Marks the confirm button destructive (e.g. reject). */
+  destructive?: boolean;
 }
 
 /**
@@ -29,7 +32,9 @@ export function DecisionDialog({
   commentRequired,
   loading,
   onSubmit,
+  destructive,
 }: DecisionDialogProps) {
+  const { t } = useTranslation();
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -46,7 +51,7 @@ export function DecisionDialog({
   const submit = async () => {
     const trimmed = comment.trim();
     if (commentRequired && !trimmed) {
-      setCommentError("A comment is required.");
+      setCommentError(t("decision.commentRequired"));
       return;
     }
     setError(null);
@@ -58,9 +63,9 @@ export function DecisionDialog({
       if (err instanceof ApiError) {
         if (err.fieldErrors?.comment) setCommentError(err.fieldErrors.comment[0]);
         else if (err.fieldErrors?.detail) setError(err.fieldErrors.detail[0]);
-        else setError(err.detail ?? "The action couldn't be completed.");
+        else setError(err.detail ?? t("decision.actionError"));
       } else {
-        setError("Couldn't reach the server. Please try again.");
+        setError(t("common.networkError"));
       }
     }
   };
@@ -72,18 +77,18 @@ export function DecisionDialog({
       title={`${action}${subject ? ` — ${subject}` : ""}`}
       description={
         commentRequired
-          ? "Explain your decision — the comment is required and shown to the owner."
-          : "Optionally add a comment for the owner."
+          ? t("decision.descriptionRequired")
+          : t("decision.descriptionOptional")
       }
       size="sm"
       footer={
         <>
           <Button variant="tertiary" size="sm" onClick={onClose} disabled={loading}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             size="sm"
-            variant={action === "Reject" ? "destructive" : "primary"}
+            variant={destructive ? "destructive" : "primary"}
             onClick={submit}
             loading={loading}
             disabled={commentRequired && !comment.trim()}
@@ -99,7 +104,8 @@ export function DecisionDialog({
         </Alert>
       )}
       <Textarea
-        label={commentRequired ? "Comment" : "Comment (optional)"}
+        dir="auto"
+        label={commentRequired ? t("common.comment") : t("common.commentOptional")}
         rows={3}
         maxLength={2000}
         value={comment}

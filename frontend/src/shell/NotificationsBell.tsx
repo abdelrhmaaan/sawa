@@ -1,30 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import i18n from "@/i18n";
 import {
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } from "@/lib/api";
+import { formatWhen } from "@/lib/format";
 import type { AppNotification } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const POLL_MS = 30_000;
-
-function formatWhen(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 /**
  * Topbar bell: unread-count badge + dropdown of recent notifications.
  * Clicking an item marks it read and navigates to its `link` route.
  */
 export function NotificationsBell() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -60,6 +55,25 @@ export function NotificationsBell() {
       window.removeEventListener("focus", onVisible);
     };
   }, [refreshCount]);
+
+  // Server-rendered messages follow the active language.
+  useEffect(() => {
+    const onLang = () => {
+      refreshCount();
+      if (open) {
+        listNotifications({ page_size: 10 })
+          .then((res) => {
+            setItems(res.results);
+            setUnread(res.unread_count);
+          })
+          .catch(() => {});
+      }
+    };
+    i18n.on("languageChanged", onLang);
+    return () => {
+      i18n.off("languageChanged", onLang);
+    };
+  }, [refreshCount, open]);
 
   // Close on click-outside / Escape.
   useEffect(() => {
@@ -124,22 +138,22 @@ export function NotificationsBell() {
     <div ref={rootRef} className="relative">
       <button
         onClick={toggle}
-        aria-label="Notifications"
+        aria-label={t("notifications.title")}
         className="relative w-8 h-8 flex items-center justify-center rounded-md text-text-secondary hover:bg-surface-alt transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
       >
         <Bell size={17} />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
+          <span dir="ltr" className="absolute -top-0.5 -end-0.5 min-w-[16px] h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 max-w-[90vw] bg-white border border-border rounded-xl shadow-lg overflow-hidden z-50">
+        <div className="absolute end-0 top-10 w-80 max-w-[90vw] bg-white border border-border rounded-xl shadow-lg overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
             <p className="text-body-sm font-semibold text-text-primary">
-              Notifications
+              {t("notifications.title")}
             </p>
             {unread > 0 && (
               <button
@@ -147,7 +161,7 @@ export function NotificationsBell() {
                 className="flex items-center gap-1 text-caption text-brand-600 hover:text-brand-700 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 rounded"
               >
                 <CheckCheck size={13} />
-                Mark all read
+                {t("notifications.markAllRead")}
               </button>
             )}
           </div>
@@ -159,11 +173,11 @@ export function NotificationsBell() {
               </div>
             ) : failed ? (
               <p className="px-4 py-8 text-center text-body-sm text-text-muted">
-                Couldn't load notifications. Try again.
+                {t("notifications.loadError")}
               </p>
             ) : items.length === 0 ? (
               <p className="px-4 py-8 text-center text-body-sm text-text-muted">
-                Nothing yet — decisions on your requests and timesheets show up here.
+                {t("notifications.empty")}
               </p>
             ) : (
               items.map((n) => (
@@ -171,7 +185,7 @@ export function NotificationsBell() {
                   key={n.id}
                   onClick={() => onItem(n)}
                   className={cn(
-                    "w-full text-left px-4 py-3 border-b border-divider last:border-0 transition-colors duration-100 hover:bg-surface-alt focus-visible:outline-none focus-visible:bg-surface-alt",
+                    "w-full text-start px-4 py-3 border-b border-divider last:border-0 transition-colors duration-100 hover:bg-surface-alt focus-visible:outline-none focus-visible:bg-surface-alt",
                     !n.is_read && "bg-brand-50"
                   )}
                 >
@@ -179,8 +193,11 @@ export function NotificationsBell() {
                     {!n.is_read && (
                       <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 shrink-0" />
                     )}
-                    <span className={cn("min-w-0", n.is_read && "pl-3.5")}>
-                      <span className="block text-body-sm text-text-primary leading-snug">
+                    <span className={cn("min-w-0", n.is_read && "ps-3.5")}>
+                      <span
+                        className="block text-body-sm text-text-primary leading-snug"
+                        dir="auto"
+                      >
                         {n.message}
                       </span>
                       <span className="block text-caption mt-0.5">

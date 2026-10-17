@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { ClipboardList } from "lucide-react";
 
@@ -23,16 +24,24 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
-  requestTypeLabels,
   type EmployeeRequestDetail,
   type RequestType,
 } from "@/lib/types";
+
+const typeValues: RequestType[] = [
+  "leave",
+  "equipment",
+  "wfh",
+  "hr_service",
+  "general",
+];
 
 const EDITABLE = ["draft", "returned"];
 
 export default function RequestFormPage() {
   const { id } = useParams();
   const editId = id ? Number(id) : null;
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -81,10 +90,10 @@ export default function RequestFormPage() {
         : await createRequest(body);
       toast({
         variant: "success",
-        title: editId ? "Request updated." : "Request created.",
+        title: editId ? t("requests.updatedToast") : t("requests.createdToast"),
         description: editId
           ? undefined
-          : "It's saved as a draft — submit it when you're ready.",
+          : t("requests.createdToastDescription"),
       });
       navigate(`/requests/${saved.id}`);
     } catch (err) {
@@ -95,10 +104,10 @@ export default function RequestFormPage() {
           setFieldErrors(flat);
           if (flat.detail) setError(flat.detail);
         } else {
-          setError(err.detail ?? "Couldn't save the request. Please try again.");
+          setError(err.detail ?? t("requests.saveError"));
         }
       } else {
-        setError("Couldn't reach the server. Please try again.");
+        setError(t("common.networkError"));
       }
     } finally {
       setSaving(false);
@@ -110,22 +119,22 @@ export default function RequestFormPage() {
     if (loadState === "loading") {
       return (
         <div className="max-w-xl">
-          <PageHeader title="Edit request" />
-          <LoadingState message="Loading request…" />
+          <PageHeader title={t("requests.editTitle")} />
+          <LoadingState message={t("requests.loadingRequest")} />
         </div>
       );
     }
     if (loadState === "notfound") {
       return (
         <div className="max-w-xl">
-          <PageHeader title="Edit request" />
+          <PageHeader title={t("requests.editTitle")} />
           <EmptyState
             icon={<ClipboardList size={22} />}
-            title="Request not found"
-            description="It doesn't exist or isn't visible to you."
+            title={t("requests.notFoundTitle")}
+            description={t("requests.notFoundDescription")}
             action={
               <Button size="sm" variant="secondary" onClick={() => navigate("/requests")}>
-                Back to my requests
+                {t("requests.backToRequests")}
               </Button>
             }
           />
@@ -135,7 +144,7 @@ export default function RequestFormPage() {
     if (loadState === "error") {
       return (
         <div className="max-w-xl">
-          <PageHeader title="Edit request" />
+          <PageHeader title={t("requests.editTitle")} />
           <ErrorState onRetry={load} />
         </div>
       );
@@ -147,17 +156,17 @@ export default function RequestFormPage() {
     if (notEditable) {
       return (
         <div className="max-w-xl">
-          <PageHeader title="Edit request" />
+          <PageHeader title={t("requests.editTitle")} />
           <Card>
-            <Alert variant="info" title="This request is read-only">
+            <Alert variant="info" title={t("requests.readOnlyTitle")}>
               {loaded && loaded.owner?.id !== user?.id
-                ? "You can only edit your own requests."
-                : `Requests in "${loaded?.status ?? ""}" status can't be edited.`}
+                ? t("requests.readOnlyOwner")
+                : t("requests.readOnlyStatus", { status: loaded?.status ?? "" })}
             </Alert>
             <div className="flex gap-2 mt-4">
               <Link to={loaded ? `/requests/${loaded.id}` : "/requests"}>
                 <Button size="sm" variant="secondary">
-                  {loaded ? "View request" : "Back to my requests"}
+                  {loaded ? t("requests.viewRequest") : t("requests.backToRequests")}
                 </Button>
               </Link>
             </div>
@@ -170,16 +179,16 @@ export default function RequestFormPage() {
   return (
     <div className="max-w-xl">
       <PageHeader
-        title={editId ? "Edit request" : "New request"}
+        title={editId ? t("requests.editTitle") : t("requests.newTitle")}
         description={
           editId
-            ? "Update the details — you can resubmit afterwards."
-            : "Saved as a draft. Nothing is sent to your approver until you submit."
+            ? t("requests.editDescription")
+            : t("requests.newDescription")
         }
         breadcrumb={
           editId
-            ? [{ label: "My requests" }, { label: `Request #${editId}` }, { label: "Edit" }]
-            : [{ label: "My requests" }, { label: "New request" }]
+            ? [{ label: t("requests.breadcrumbMyRequests") }, { label: t("requests.breadcrumbRequest", { id: editId }) }, { label: t("requests.breadcrumbEdit") }]
+            : [{ label: t("requests.breadcrumbMyRequests") }, { label: t("requests.newTitle") }]
         }
       />
 
@@ -191,35 +200,37 @@ export default function RequestFormPage() {
             </Alert>
           )}
           <Select
-            label="Type"
+            label={t("requests.typeLabel")}
             required
             value={type}
             onChange={(e) => setType(e.target.value as RequestType)}
             error={fieldErrors.type}
           >
-            {Object.entries(requestTypeLabels).map(([v, l]) => (
+            {typeValues.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(`requestType.${v}`)}
               </option>
             ))}
           </Select>
           <Input
-            label="Title"
+            dir="auto"
+            label={t("requests.titleLabel")}
             required
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             error={fieldErrors.title}
-            hint="Keep it short — 200 characters max."
+            hint={t("requests.titleHint")}
           />
           <Textarea
-            label="Description"
+            dir="auto"
+            label={t("requests.descriptionLabel")}
             required
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             error={fieldErrors.description}
-            hint="What do you need, when, and why? The more context, the faster the decision."
+            hint={t("requests.descriptionHint")}
           />
           <div className="flex justify-end gap-2">
             <Button
@@ -229,10 +240,10 @@ export default function RequestFormPage() {
                 navigate(editId ? `/requests/${editId}` : "/requests")
               }
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" loading={saving}>
-              {editId ? "Save changes" : "Create draft"}
+              {editId ? t("common.saveChanges") : t("requests.createDraft")}
             </Button>
           </div>
         </form>

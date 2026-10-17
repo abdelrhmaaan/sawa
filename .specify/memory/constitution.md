@@ -2,12 +2,14 @@
 
 <!--
 Sync Impact Report
-- Version change: (none — initial ratification) → 1.0.0
-- Modified principles: n/a (first adoption)
-- Added sections: Core Principles I–VII, Technology Constraints,
-  Development Workflow & Quality Gates, Governance
+- Version change: 1.0.0 → 1.1.0 (MINOR — materially expanded guidance; Arabic moves into scope)
+- Modified principles: III. Design System First (adds LTR + RTL layout requirement)
+- Modified sections: Technology Constraints (Language line: English-first → English + Arabic)
+- Added sections: none
 - Removed sections: none
-- Follow-up TODOs: none
+- Rationale: product targets Arabic-speaking organizations (docs/brand.md); user-requested
+  scope change on 2026-10-17, implemented as feature 006.
+- Follow-up TODOs: record the scope change in docs/discovery/mvp-scope.md (feature 006).
 -->
 
 ## Core Principles
@@ -31,7 +33,9 @@ never be treated as a security measure (see Principle IV).
 
 UI MUST be built from the components in `frontend/src/components/` and the tokens in
 `frontend/src/index.css`. Arbitrary colors, spacing, or one-off component variants are
-prohibited; extend the system instead. All layouts MUST work at 375px, 768px, and 1280px.
+prohibited; extend the system instead. All layouts MUST work at 375px, 768px, and 1280px,
+in both left-to-right (English) and right-to-left (Arabic) directions — direction-aware
+(logical start/end) spacing and alignment MUST be used instead of fixed left/right.
 
 ### IV. Server-Side Authority (NON-NEGOTIABLE)
 
@@ -68,7 +72,9 @@ scope. A slice is not done until it works end-to-end and its tests pass.
   design system.
 - API: documented REST (drf-spectacular), with validation, authorization, filtering,
   and pagination on list endpoints.
-- Language: English-first UI; Arabic support is post-MVP.
+- Language: English and Arabic (RTL). English is the default and fallback. Every
+  user-facing string — UI text and API messages shown to users — MUST be translatable;
+  no hardcoded display text.
 - Secrets: `.env` files, never source control.
 
 ## Development Workflow & Quality Gates
@@ -91,4 +97,4 @@ scope. A slice is not done until it works end-to-end and its tests pass.
 - All specs, plans, reviews, and demos MUST verify compliance; violations block the
   feature, not the principle.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-21
+**Version**: 1.1.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-10-17

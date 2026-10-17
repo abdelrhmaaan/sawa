@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ListChecks, RotateCcw } from "lucide-react";
 
 import {
@@ -17,6 +18,7 @@ import {
   listTimesheets,
 } from "@/lib/api";
 import type { TimesheetEntry, TimesheetList } from "@/lib/types";
+import { formatHours, formatWeekday } from "@/lib/format";
 
 const PAGE_SIZE = 20;
 
@@ -25,15 +27,11 @@ function fmtTime(t: string) {
 }
 
 function fmtDay(iso: string) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatWeekday(iso);
 }
 
 export default function TimesheetReviewPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [page, setPage] = useState(1);
@@ -72,12 +70,12 @@ export default function TimesheetReviewPage() {
     setApprovingId(e.id);
     try {
       await decideTimesheetEntry(e.id, "approve");
-      toast({ variant: "success", title: "Entry approved." });
+      toast({ variant: "success", title: t("review.approvedToast") });
       await load();
     } catch (err) {
       toast({
         variant: "error",
-        title: "Couldn't approve the entry.",
+        title: t("review.approveError"),
         description:
           err instanceof ApiError
             ? err.detail ?? err.fieldErrors?.detail?.[0]
@@ -93,7 +91,7 @@ export default function TimesheetReviewPage() {
     setDeciding(true);
     try {
       await decideTimesheetEntry(returning.id, "return", comment);
-      toast({ variant: "success", title: "Entry returned to the owner." });
+      toast({ variant: "success", title: t("review.returnedToast") });
       await load();
     } finally {
       setDeciding(false);
@@ -105,8 +103,8 @@ export default function TimesheetReviewPage() {
   return (
     <div>
       <PageHeader
-        title="Timesheet review"
-        description="Submitted time entries waiting for your decision."
+        title={t("review.title")}
+        description={t("review.description")}
       />
 
       {loading ? (
@@ -120,8 +118,8 @@ export default function TimesheetReviewPage() {
       ) : !data || data.results.length === 0 ? (
         <EmptyState
           icon={<ListChecks size={22} />}
-          title="All caught up"
-          description="There are no timesheets waiting for your review."
+          title={t("review.emptyTitle")}
+          description={t("review.emptyDescription")}
         />
       ) : (
         <>
@@ -129,21 +127,21 @@ export default function TimesheetReviewPage() {
             columns={[
               {
                 key: "owner",
-                header: "Owner",
+                header: t("review.colOwner"),
                 render: (e) => (
-                  <span className="font-medium">{e.owner?.name ?? "—"}</span>
+                  <span className="font-medium" dir="auto">{e.owner?.name ?? "—"}</span>
                 ),
               },
               {
                 key: "date",
-                header: "Date",
+                header: t("review.colDate"),
                 render: (e) => (
                   <span className="text-text-secondary">{fmtDay(e.date)}</span>
                 ),
               },
               {
                 key: "start_time",
-                header: "Time",
+                header: t("review.colTime"),
                 render: (e) => (
                   <span className="text-text-secondary tabular-nums">
                     {fmtTime(e.start_time)}–{fmtTime(e.end_time)}
@@ -152,19 +150,19 @@ export default function TimesheetReviewPage() {
               },
               {
                 key: "hours",
-                header: "Hours",
+                header: t("review.colHours"),
                 align: "right",
                 render: (e) => (
                   <span className="tabular-nums">
-                    {Number(e.hours).toFixed(2)} h
+                    {formatHours(e.hours)}
                   </span>
                 ),
               },
               {
                 key: "note",
-                header: "Note",
+                header: t("review.colNote"),
                 render: (e) => (
-                  <span className="text-text-muted">{e.note || "—"}</span>
+                  <span className="text-text-muted" dir="auto">{e.note || "—"}</span>
                 ),
               },
               {
@@ -180,7 +178,7 @@ export default function TimesheetReviewPage() {
                       loading={approvingId === e.id}
                       onClick={() => onApprove(e)}
                     >
-                      Approve
+                      {t("common.approve")}
                     </Button>
                     <Button
                       size="sm"
@@ -188,7 +186,7 @@ export default function TimesheetReviewPage() {
                       iconLeft={<RotateCcw size={13} />}
                       onClick={() => setReturning(e)}
                     >
-                      Return
+                      {t("common.return")}
                     </Button>
                   </span>
                 ),
@@ -199,7 +197,8 @@ export default function TimesheetReviewPage() {
 
           <div className="flex items-center justify-between gap-3 mt-4">
             <p className="text-caption">
-              Page {page} of {totalPages} · {data.count} pending
+              {t("pagination.pageOf", { page, pages: totalPages })} ·{" "}
+              {t("pagination.pending", { count: data.count })}
             </p>
             <div className="flex gap-2">
               <Button
@@ -208,7 +207,7 @@ export default function TimesheetReviewPage() {
                 disabled={!data.previous}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                Previous
+                {t("common.previous")}
               </Button>
               <Button
                 variant="secondary"
@@ -216,7 +215,7 @@ export default function TimesheetReviewPage() {
                 disabled={!data.next}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("common.next")}
               </Button>
             </div>
           </div>
@@ -227,10 +226,13 @@ export default function TimesheetReviewPage() {
       <DecisionDialog
         open={returning !== null}
         onClose={() => setReturning(null)}
-        action="Return"
+        action={t("common.return")}
         subject={
           returning
-            ? `${returning.owner?.name ?? ""} · ${fmtDay(returning.date)}`
+            ? t("review.entrySubject", {
+                name: returning.owner?.name ?? "",
+                day: fmtDay(returning.date),
+              })
             : undefined
         }
         commentRequired

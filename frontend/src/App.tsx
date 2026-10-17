@@ -6,12 +6,14 @@ import {
   Routes,
   useLocation,
 } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Compass } from "lucide-react";
 
 import { ToastProvider } from "@/components/overlays";
 import { Button, EmptyState, LoadingState } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { Shell } from "@/shell/Shell";
+import type { I18nKey } from "@/i18n";
 import ApprovalsPage from "@/pages/ApprovalsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import DesignSystem from "@/pages/DesignSystem";
@@ -23,26 +25,27 @@ import RequestsPage from "@/pages/RequestsPage";
 import TimesheetReviewPage from "@/pages/TimesheetReviewPage";
 import TimesheetsPage from "@/pages/TimesheetsPage";
 
-const pageTitles: Record<string, string> = {
-  "/": "Dashboard",
-  "/profile": "My profile",
-  "/requests": "My requests",
-  "/requests/new": "New request",
-  "/approvals": "Approvals",
-  "/timesheets": "My timesheets",
-  "/timesheets/review": "Timesheet review",
-  "/design-system": "Design system",
+const pageTitleKeys: Record<string, I18nKey> = {
+  "/": "nav.dashboard",
+  "/profile": "nav.myProfile",
+  "/requests": "nav.myRequests",
+  "/requests/new": "requests.newTitle",
+  "/approvals": "nav.approvals",
+  "/timesheets": "nav.myTimesheets",
+  "/timesheets/review": "nav.timesheetReview",
+  "/design-system": "nav.designSystem",
 };
 
-// Titles for dynamic paths (e.g. /requests/12, /requests/12/edit).
-function resolvePageTitle(pathname: string): string {
-  if (pageTitles[pathname]) return pageTitles[pathname];
-  if (/^\/requests\/\d+\/edit$/.test(pathname)) return "Edit request";
-  if (/^\/requests\/\d+$/.test(pathname)) return "Request";
-  return "SAWA";
+// Title keys for dynamic paths (e.g. /requests/12, /requests/12/edit).
+function resolvePageTitleKey(pathname: string): I18nKey {
+  if (pageTitleKeys[pathname]) return pageTitleKeys[pathname];
+  if (/^\/requests\/\d+\/edit$/.test(pathname)) return "requests.editTitle";
+  if (/^\/requests\/\d+$/.test(pathname)) return "requests.detailTitle";
+  return "common.appName";
 }
 
 function RequireAuth() {
+  const { t } = useTranslation();
   const { status } = useAuth();
   const location = useLocation();
 
@@ -50,7 +53,7 @@ function RequireAuth() {
     // Full-page loading — never flash the login screen while restoring a session.
     return (
       <div className="min-h-screen bg-page flex items-center justify-center">
-        <LoadingState message="Signing you in…" />
+        <LoadingState message={t("auth.signingIn")} />
       </div>
     );
   }
@@ -73,7 +76,7 @@ function ShellLayout() {
         department: user.department,
       }}
       onLogout={logout}
-      pageTitle={resolvePageTitle(location.pathname)}
+      pageTitle={resolvePageTitleKey(location.pathname)}
     >
       <Outlet />
     </Shell>
@@ -81,13 +84,14 @@ function ShellLayout() {
 }
 
 function NotFound() {
+  const { t } = useTranslation();
   const location = useLocation();
   return (
     <EmptyState
       icon={<Compass size={22} />}
-      title="Page not found"
-      description={`Nothing lives at ${location.pathname}.`}
-      action={<Button size="sm" onClick={() => window.history.back()}>Go back</Button>}
+      title={t("errors.notFoundTitle")}
+      description={t("errors.notFoundDescription", { path: location.pathname })}
+      action={<Button size="sm" onClick={() => window.history.back()}>{t("common.goBack")}</Button>}
     />
   );
 }

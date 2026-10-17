@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Alert,
@@ -49,6 +50,7 @@ export default function TimesheetEntryForm({
   entry,
   onSaved,
 }: TimesheetEntryFormProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [date, setDate] = useState("");
@@ -87,8 +89,8 @@ export default function TimesheetEntryForm({
       }
       toast({
         variant: "success",
-        title: entry ? "Entry updated." : "Time logged.",
-        description: entry ? undefined : "Saved as a draft — submit it when ready.",
+        title: entry ? t("timesheets.updatedToast") : t("timesheets.createdToast"),
+        description: entry ? undefined : t("timesheets.createdToastDescription"),
       });
       onSaved();
       onClose();
@@ -100,10 +102,10 @@ export default function TimesheetEntryForm({
           setFieldErrors(flat);
           if (flat.detail) setError(flat.detail);
         } else {
-          setError(err.detail ?? "Couldn't save the entry. Please try again.");
+          setError(err.detail ?? t("timesheets.saveError"));
         }
       } else {
-        setError("Couldn't reach the server. Please try again.");
+        setError(t("common.networkError"));
       }
     } finally {
       setSaving(false);
@@ -114,20 +116,20 @@ export default function TimesheetEntryForm({
     <Modal
       open={open}
       onClose={onClose}
-      title={entry ? "Edit time entry" : "Log time"}
+      title={entry ? t("timesheets.formEditTitle") : t("timesheets.formNewTitle")}
       description={
         entry
-          ? "Adjust the entry — hours are recalculated on save."
-          : "Pick a date and a time range. Hours are computed for you."
+          ? t("timesheets.formEditDescription")
+          : t("timesheets.formNewDescription")
       }
       size="sm"
       footer={
         <>
           <Button variant="tertiary" size="sm" onClick={onClose} disabled={saving}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" onClick={onSubmit} loading={saving}>
-            {entry ? "Save changes" : "Save entry"}
+            {entry ? t("common.saveChanges") : t("timesheets.saveEntry")}
           </Button>
         </>
       }
@@ -139,7 +141,7 @@ export default function TimesheetEntryForm({
           </Alert>
         )}
         <DateInput
-          label="Date"
+          label={t("timesheets.dateLabel")}
           required
           max={todayIso()}
           value={date}
@@ -148,7 +150,7 @@ export default function TimesheetEntryForm({
         />
         <div className="grid grid-cols-2 gap-3">
           <Input
-            label="Start"
+            label={t("timesheets.startLabel")}
             type="time"
             required
             value={start}
@@ -156,7 +158,7 @@ export default function TimesheetEntryForm({
             error={fieldErrors.start_time}
           />
           <Input
-            label="End"
+            label={t("timesheets.endLabel")}
             type="time"
             required
             value={end}
@@ -173,19 +175,20 @@ export default function TimesheetEntryForm({
           }
         >
           {hours
-            ? `${hours} hours`
+            ? t("timesheets.hoursPreview", { hours })
             : start && end
-              ? "End time must be after start time."
-              : "Enter a start and end time to see the hours."}
+              ? t("timesheets.endAfterStart")
+              : t("timesheets.enterTimes")}
         </p>
         <Textarea
-          label="Note"
+          dir="auto"
+          label={t("timesheets.noteLabel")}
           rows={3}
           maxLength={500}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           error={fieldErrors.note}
-          hint="What did you work on? 500 characters max."
+          hint={t("timesheets.noteHint")}
         />
         {/* Visually-hidden submit so Enter works inside the form */}
         <button type="submit" className="hidden" aria-hidden="true" tabIndex={-1} />

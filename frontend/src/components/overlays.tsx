@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -38,6 +39,7 @@ const modalSizes: Record<ModalSize, string> = {
 };
 
 export function Modal({ open, onClose, title, description, size = "md", children, footer }: ModalProps) {
+  const { t } = useTranslation();
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export function Modal({ open, onClose, title, description, size = "md", children
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text-secondary hover:bg-surface-alt transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 shrink-0"
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <X size={16} />
             </button>
@@ -130,6 +132,7 @@ const drawerSizes: Record<DrawerSize, string> = {
 };
 
 export function Drawer({ open, onClose, title, description, size = "md", children, footer }: DrawerProps) {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -160,7 +163,7 @@ export function Drawer({ open, onClose, title, description, size = "md", childre
         aria-modal="true"
         aria-labelledby={title ? "drawer-title" : undefined}
         className={cn(
-          "relative z-10 ml-auto w-full bg-white shadow-xl flex flex-col h-full",
+          "relative z-10 ms-auto w-full bg-white shadow-xl flex flex-col h-full",
           drawerSizes[size]
         )}
       >
@@ -173,7 +176,7 @@ export function Drawer({ open, onClose, title, description, size = "md", childre
           <button
             onClick={onClose}
             className="text-text-muted hover:text-text-secondary transition-colors rounded-md p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <X size={18} />
           </button>
@@ -244,6 +247,7 @@ const toastIcons: Record<ToastVariant, ReactNode> = {
 };
 
 function ToastItemComponent({ toast: t, onRemove }: { toast: ToastItem; onRemove: () => void }) {
+  const { t: tr } = useTranslation();
   useEffect(() => {
     const timer = setTimeout(onRemove, t.duration ?? 4000);
     return () => clearTimeout(timer);
@@ -262,7 +266,7 @@ function ToastItemComponent({ toast: t, onRemove }: { toast: ToastItem; onRemove
       <button
         onClick={onRemove}
         className="text-text-muted hover:text-text-secondary transition-colors shrink-0"
-        aria-label="Dismiss"
+        aria-label={tr("common.dismiss")}
       >
         <X size={14} />
       </button>
@@ -281,7 +285,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ toast }}>
       {children}
       {createPortal(
-        <div className="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end">
+        <div className="fixed bottom-5 end-5 z-[60] flex flex-col gap-2 items-end">
           {state.toasts.map((t) => (
             <ToastItemComponent
               key={t.id}
@@ -318,11 +322,12 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   destructive,
   loading,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   return (
     <Modal
       open={open}
@@ -332,7 +337,7 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="tertiary" size="sm" onClick={onClose} disabled={loading}>
-            {cancelLabel}
+            {cancelLabel ?? t("common.cancel")}
           </Button>
           <Button
             variant={destructive ? "destructive" : "primary"}
@@ -340,7 +345,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             loading={loading}
           >
-            {confirmLabel}
+            {confirmLabel ?? t("common.confirm")}
           </Button>
         </>
       }
@@ -387,9 +392,13 @@ export function Dropdown({ trigger, items, onSelect, align = "right" }: Dropdown
     const top = fitsBelow
       ? rect.bottom + gap
       : Math.max(gap, rect.top - gap - menuH);
+    // In RTL, "align to the right edge" means pinning the menu's left edge
+    // to the trigger's left edge (end edge in a right-to-left layout).
+    const rtl = document.documentElement.dir === "rtl";
+    const atEnd = (align === "right") !== rtl;
     setMenuStyle({
       top,
-      ...(align === "right"
+      ...(atEnd
         ? { right: window.innerWidth - rect.right }
         : { left: rect.left }),
     });
@@ -431,7 +440,7 @@ export function Dropdown({ trigger, items, onSelect, align = "right" }: Dropdown
                 disabled={item.disabled}
                 onClick={() => { onSelect(item.key); setOpen(false); }}
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-3 py-2 text-body-sm font-medium text-left transition-colors duration-100",
+                  "w-full flex items-center gap-2.5 px-3 py-2 text-body-sm font-medium text-start transition-colors duration-100",
                   item.destructive
                     ? "text-error hover:bg-error-subtle"
                     : "text-text-primary hover:bg-surface-alt",

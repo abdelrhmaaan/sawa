@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Alert,
@@ -8,11 +9,12 @@ import {
   Input,
 } from "@/components/ui";
 import { useToast } from "@/components/overlays";
-import { PageHeader, roleLabels } from "@/shell/Shell";
+import { PageHeader } from "@/shell/Shell";
 import { ApiError, updateMe } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { user, setUser } = useAuth();
   const { toast } = useToast();
 
@@ -36,7 +38,7 @@ export default function ProfilePage() {
         last_name: lastName.trim(),
       });
       setUser(updated);
-      toast({ variant: "success", title: "Profile updated." });
+      toast({ variant: "success", title: t("profile.updatedToast") });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.fieldErrors) {
@@ -46,10 +48,10 @@ export default function ProfilePage() {
           }
           setFieldErrors(flat);
         } else {
-          setError(err.detail ?? "Couldn't save your profile. Please try again.");
+          setError(err.detail ?? t("profile.saveError"));
         }
       } else {
-        setError("Couldn't reach the server. Please try again.");
+        setError(t("common.networkError"));
       }
     } finally {
       setSaving(false);
@@ -58,52 +60,52 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader title="My profile" description="Your account details and editable fields." />
+      <PageHeader title={t("profile.title")} description={t("profile.description")} />
 
       <Card className="mb-6">
-        <CardHeader title="Account" description="Managed by HR — contact them to change these." />
+        <CardHeader title={t("profile.accountTitle")} description={t("profile.accountDescription")} />
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mt-4">
           <div>
-            <dt className="text-overline text-text-muted">Email</dt>
+            <dt className="text-overline text-text-muted">{t("profile.email")}</dt>
             <dd className="text-body-sm text-text-primary mt-0.5">{user.email}</dd>
           </div>
           <div>
-            <dt className="text-overline text-text-muted">Role</dt>
-            <dd className="text-body-sm text-text-primary mt-0.5">{roleLabels[user.role]}</dd>
+            <dt className="text-overline text-text-muted">{t("profile.role")}</dt>
+            <dd className="text-body-sm text-text-primary mt-0.5">{t(`role.${user.role}`)}</dd>
           </div>
           <div>
-            <dt className="text-overline text-text-muted">Department</dt>
+            <dt className="text-overline text-text-muted">{t("profile.department")}</dt>
             <dd className="text-body-sm text-text-primary mt-0.5">{user.department || "—"}</dd>
           </div>
           <div>
-            <dt className="text-overline text-text-muted">Manager</dt>
+            <dt className="text-overline text-text-muted">{t("profile.manager")}</dt>
             <dd className="text-body-sm text-text-primary mt-0.5">{user.manager?.name ?? "—"}</dd>
           </div>
         </dl>
       </Card>
 
       <Card>
-        <CardHeader title="Name" />
+        <CardHeader title={t("profile.nameTitle")} />
         <form onSubmit={onSubmit} className="mt-4 space-y-4">
           {error && (
             <Alert variant="error" onDismiss={() => setError(null)}>{error}</Alert>
           )}
           <Input
-            label="First name"
+            label={t("profile.firstName")}
             required
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             error={fieldErrors.first_name}
           />
           <Input
-            label="Last name"
+            label={t("profile.lastName")}
             required
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             error={fieldErrors.last_name}
           />
           <div className="flex justify-end">
-            <Button type="submit" loading={saving}>Save changes</Button>
+            <Button type="submit" loading={saving}>{t("common.saveChanges")}</Button>
           </div>
         </form>
       </Card>

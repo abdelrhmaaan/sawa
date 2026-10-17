@@ -62,14 +62,6 @@ export interface DashboardData {
 
 export type RequestType = "leave" | "equipment" | "wfh" | "hr_service" | "general";
 
-export const requestTypeLabels: Record<RequestType, string> = {
-  leave: "Leave",
-  equipment: "Equipment",
-  wfh: "Work from home",
-  hr_service: "HR service",
-  general: "General",
-};
-
 // Object `type` aliases (not `interface`) so they satisfy Table's
 // `Record<string, unknown>` constraint via implicit index signatures.
 export type StatusHistoryItem = {
