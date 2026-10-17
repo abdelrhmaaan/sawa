@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 
 import { Alert, Button, Input } from "@/components/ui";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
@@ -89,6 +89,14 @@ export default function LoginPage() {
           </form>
         </div>
         <p className="text-center text-caption mt-6">{t("auth.footer")}</p>
+        <div className="flex justify-center">
+          <Link
+            to="/welcome"
+            className="inline-flex min-h-11 items-center text-small text-brand-600 hover:text-brand-700 hover:underline underline-offset-2"
+          >
+            {t("auth.whatIsSawa")}
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -65,6 +65,11 @@
     - Full right-to-left layout and Arabic typeface in Arabic
     - Server messages and notifications shown in the reader's language
 
+12. **Public welcome page** *(scope change 2026-10-17, constitution v1.1.0, `specs/007-public-landing-page/`)*
+    - Public `/welcome` page explaining SAWA (problem, how it works, roles, trust)
+    - Informational only — no sign-up, pricing, or forms
+    - Link from the sign-in page
+
 ---
 
 ## Out of Scope (What We're NOT Building in MVP)

@@ -58,7 +58,8 @@
     "passwordPlaceholder": "••••••••",
     "invalidCredentials": "Invalid email or password.",
     "networkError": "Couldn't reach the server. Check your connection and try again.",
-    "footer": "SAWA — work better, together."
+    "footer": "SAWA — work better, together.",
+    "whatIsSawa": "What is SAWA?"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -295,5 +296,132 @@
     "requests_other": "{{count}} requests",
     "entries_one": "{{count}} entry",
     "entries_other": "{{count}} entries"
+  },
+  "landing": {
+    "meta": {
+      "title": "SAWA — Every request. Every hour. Together."
+    },
+    "skipToContent": "Skip to content",
+    "nav": {
+      "label": "Main",
+      "home": "SAWA home",
+      "problem": "Problem",
+      "how": "How it works",
+      "roles": "Roles",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "hero": {
+      "eyebrow": "For employees, managers, and HR",
+      "titleLead": "Every request. Every hour.",
+      "titleAccent": "Together.",
+      "subtitle": "One shared place for requests, timesheets, and approvals — no more chasing emails and spreadsheets.",
+      "secondary": "See how it works",
+      "mockLabel": "Example: a leave request moving from Submitted to Approved, with 3 approvals pending"
+    },
+    "mock": {
+      "leaveTitle": "Annual leave · 3 days",
+      "leaveDates": "9–11 Nov",
+      "requester": "Sara Hassan",
+      "submittedAt": "Mon 09:14 · by Sara",
+      "approvedAt": "Mon 11:02 · by Ahmed",
+      "approvedComment": "“Enjoy your break!”",
+      "pendingCount": "3",
+      "pendingLabel": "pending approvals",
+      "timesheetDay": "Mon · 09:00–17:30",
+      "timesheetHours": "8.5 h",
+      "hoursValue": "38.5 h",
+      "itemLeave": "Annual leave",
+      "itemEquipment": "New laptop",
+      "itemWfh": "Thursday from home"
+    },
+    "pain": {
+      "title": "Sound familiar?",
+      "subtitle": "Most teams still handle requests and timesheets the hard way.",
+      "visibility": {
+        "title": "No visibility",
+        "quote": "“Where's my leave request?”",
+        "body": "Requests get lost across email, WhatsApp, and paper forms."
+      },
+      "accountability": {
+        "title": "No accountability",
+        "quote": "“Who approved this, and when?”",
+        "body": "Decisions happen in side chats, with no record to look back on."
+      },
+      "time": {
+        "title": "Wasted time",
+        "quote": "“Has everyone sent their hours?”",
+        "body": "Managers chase timesheets every week, and HR spends days merging spreadsheets."
+      }
+    },
+    "shift": {
+      "title": "Everything, together.",
+      "body": "One place where every request and every hour has an owner, a status, and a history.",
+      "before": "Before",
+      "after": "With SAWA",
+      "email": "Email",
+      "chat": "Chat",
+      "paper": "Paper forms",
+      "sheets": "Spreadsheets"
+    },
+    "how": {
+      "title": "How it works",
+      "subtitle": "Three steps, the same for every request and every timesheet.",
+      "step": "Step {{n}}",
+      "submit": {
+        "title": "Submit",
+        "body": "Send a request or log your hours in under 2 minutes, from any device."
+      },
+      "review": {
+        "title": "Review",
+        "body": "Your manager approves, rejects, or returns it with a comment."
+      },
+      "track": {
+        "title": "Track",
+        "body": "Everyone sees the live status, and HR sees the whole organization."
+      }
+    },
+    "roles": {
+      "title": "Built for every role",
+      "subtitle": "Everyone gets the view they need — nothing more, nothing less.",
+      "employee": {
+        "b1": "See every request and its status in one place.",
+        "b2": "Submit a leave request in under 2 minutes.",
+        "b3": "Get notified when something is approved or needs changes."
+      },
+      "manager": {
+        "b1": "All pending team requests and timesheets on one dashboard.",
+        "b2": "Approve, reject, or return with a comment.",
+        "b3": "Filter by type, status, or team member."
+      },
+      "hr": {
+        "name": "HR",
+        "b1": "An organization-wide view of pending requests and hours.",
+        "b2": "Working-hour and request reports in minutes, not days.",
+        "b3": "A full audit trail of every decision."
+      }
+    },
+    "trust": {
+      "title": "Built to be trusted",
+      "access": {
+        "title": "Role-based access",
+        "body": "People see only what their role allows."
+      },
+      "history": {
+        "title": "Full status history",
+        "body": "Every change, with who made it and when."
+      },
+      "language": {
+        "title": "English and Arabic",
+        "body": "Full right-to-left support for Arabic."
+      }
+    },
+    "cta": {
+      "title": "Bring your team together.",
+      "body": "Sign in with the account your HR team set up for you."
+    },
+    "footer": {
+      "copyright": "© {{year}} SAWA"
+    }
   }
 }

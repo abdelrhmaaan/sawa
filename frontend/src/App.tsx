@@ -17,6 +17,7 @@ import type { I18nKey } from "@/i18n";
 import ApprovalsPage from "@/pages/ApprovalsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import DesignSystem from "@/pages/DesignSystem";
+import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import ProfilePage from "@/pages/ProfilePage";
 import RequestDetailPage from "@/pages/RequestDetailPage";
@@ -103,6 +104,7 @@ export default function App() {
         <ToastProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/welcome" element={<LandingPage />} />
             <Route element={<RequireAuth />}>
               <Route element={<ShellLayout />}>
                 <Route path="/" element={<DashboardPage />} />
