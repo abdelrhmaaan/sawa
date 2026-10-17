@@ -18,11 +18,11 @@ services:
           name: sawa-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: sawa-api.onrender.com
+        value: sawa-api-n850.onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://sawa-frontend.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://sawa-api.onrender.com,https://sawa-frontend.onrender.com
+        value: https://sawa-api-n850.onrender.com,https://sawa-frontend.onrender.com
       - key: SECURE_PROXY_SSL_HEADER
         value: HTTP_X_FORWARDED_PROTO
       - key: SEED_DEMO_PASSWORD
@@ -40,7 +40,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://sawa-api.onrender.com
+        value: https://sawa-api-n850.onrender.com
 
 databases:
   - name: sawa-db
