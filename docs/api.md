@@ -36,6 +36,10 @@ Source of truth: `specs/002-authentication-rbac/` · `003-employee-requests/` ·
 | GET | `/api/users/{id}/` | scoped detail |
 | — | `/admin/` | HR (`is_staff`) user management — the only user-write path |
 
+### Language negotiation
+
+Every request may send `Accept-Language: en` or `ar` (`en` is the default; any other value — including malformed headers — falls back to English). Successful responses carry `Content-Language` with the negotiated language, and error bodies (validation errors, throttling, auth failures) are translated to it. Notification `message` strings are rendered in the reader's language at read time. Full contract: `specs/006-arabic-localization/contracts/api-language.md`.
+
 ### Requests — [spec](../specs/003-employee-requests/spec.md)
 
 | Method | Path | Notes |

@@ -144,7 +144,7 @@ export function NotificationsBell() {
         <Bell size={17} />
         {unread > 0 && (
           <span dir="ltr" className="absolute -top-0.5 -end-0.5 min-w-[16px] h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
-            {unread > 9 ? "9+" : unread}
+            <bdi dir="ltr">{unread > 9 ? "9+" : unread}</bdi>
           </span>
         )}
       </button>

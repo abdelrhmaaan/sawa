@@ -11,6 +11,7 @@ class Command(BaseCommand):
             for po_path in sorted(base.glob("*/LC_MESSAGES/django.po")):
                 po = polib.pofile(str(po_path))
                 mo = polib.MOFile()
+                mo.metadata = po.metadata
                 for entry in po:
                     if entry.obsolete or "fuzzy" in entry.flags:
                         continue

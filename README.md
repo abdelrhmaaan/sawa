@@ -41,6 +41,15 @@ cd frontend && npm install && npm run dev  # http://localhost:5173
 - API docs: http://localhost:8000/api/docs/ · OpenAPI: `/api/schema/`
 - Admin: http://localhost:8000/admin/ (log in as seeded HR)
 
+## Languages
+
+The app ships in English (default) and Arabic — the topbar switch persists the choice (`localStorage` `sawa.lang`) and flips the layout to RTL. To add a string:
+
+- **Frontend**: add the key to `frontend/src/i18n/locales/en.json` and `ar.json`, then `npm run i18n:check` (verifies both catalogs have identical keys).
+- **Backend**: wrap the message in `gettext`/`pgettext` (status words use context `status`), add the Arabic `msgstr` to `backend/locale/ar/LC_MESSAGES/django.po`, then `python manage.py compile_catalog` — the compiled `.mo` is committed alongside.
+
+E2E note: the local dev server should run with `LOGIN_EMAIL_THROTTLE_RATE=1000/min LOGIN_IP_THROTTLE_RATE=1000/min` so repeated test logins aren't throttled.
+
 ## Testing
 
 ```bash

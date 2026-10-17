@@ -13,3 +13,168 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
 "n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+
+# ── Enum labels (TextChoices) ──
+
+msgid "Leave"
+msgstr "إجازة"
+
+msgid "Equipment"
+msgstr "معدات"
+
+msgid "Work from home"
+msgstr "العمل من المنزل"
+
+msgid "HR service"
+msgstr "خدمة الموارد البشرية"
+
+msgid "General"
+msgstr "عام"
+
+msgid "Draft"
+msgstr "مسودة"
+
+msgid "Submitted"
+msgstr "مُرسَل"
+
+msgid "Approved"
+msgstr "معتمد"
+
+msgid "Rejected"
+msgstr "مرفوض"
+
+msgid "Returned"
+msgstr "مُعاد"
+
+msgid "Employee"
+msgstr "موظف"
+
+msgid "Manager"
+msgstr "مدير"
+
+msgid "HR"
+msgstr "الموارد البشرية"
+
+# ── Status words inside sentences (lowercase in English) ──
+
+msgctxt "status"
+msgid "draft"
+msgstr "مسودة"
+
+msgctxt "status"
+msgid "submitted"
+msgstr "مُرسَل"
+
+msgctxt "status"
+msgid "approved"
+msgstr "معتمد"
+
+msgctxt "status"
+msgid "rejected"
+msgstr "مرفوض"
+
+msgctxt "status"
+msgid "returned"
+msgstr "مُعاد"
+
+# ── API messages ──
+
+msgid "Cannot edit a request in status '%(status)s'."
+msgstr "لا يمكن تعديل طلب في حالة «%(status)s»."
+
+msgid "Only draft requests can be deleted."
+msgstr "يمكن حذف مسودات الطلبات فقط."
+
+msgid "Cannot edit a timesheet entry in status '%(status)s'."
+msgstr "لا يمكن تعديل إدخال وقت في حالة «%(status)s»."
+
+msgid "Only draft timesheet entries can be deleted."
+msgstr "يمكن حذف مسودات إدخالات الوقت فقط."
+
+msgid "This field is required."
+msgstr "هذا الحقل مطلوب."
+
+msgid "Cannot change status from '%(from)s' to '%(to)s'."
+msgstr "لا يمكن تغيير الحالة من «%(from)s» إلى «%(to)s»."
+
+msgid "End time must be after start time."
+msgstr "يجب أن يكون وقت النهاية بعد وقت البداية."
+
+msgid "Date cannot be in the future."
+msgstr "لا يمكن أن يكون التاريخ في المستقبل."
+
+msgid "This entry overlaps another entry on the same date."
+msgstr "يتداخل هذا الإدخال مع إدخال آخر في التاريخ نفسه."
+
+msgid "A non-empty list of integer ids is required."
+msgstr "يلزم قائمة غير فارغة من المعرّفات الرقمية."
+
+msgid "Some entries are missing, not yours, or not submittable."
+msgstr "بعض الإدخالات مفقودة أو ليست لك أو غير قابلة للإرسال."
+
+msgid "A user cannot be their own manager."
+msgstr "لا يمكن للمستخدم أن يكون مدير نفسه."
+
+msgid "This assignment would create a manager cycle."
+msgstr "هذا التعيين سيُنشئ دورة في تسلسل المديرين."
+
+msgid "No active account found"
+msgstr "لم يتم العثور على حساب نشط"
+
+msgid "Internal server error"
+msgstr "خطأ داخلي في الخادم"
+
+# ── Third-party overrides ──
+
+msgid "No active account found with the given credentials"
+msgstr "لم يتم العثور على حساب نشط للبيانات المقدمة"
+
+msgid "Request was throttled."
+msgstr "تم تقييد الطلب بسبب كثرة المحاولات."
+
+# DRF formats {wait} into the message BEFORE calling ngettext, so the
+# lookup hits this standalone msgid (and the plural pair below via
+# Django's n=1 fallback). Kept consistent with msgstr[4] (n 11-99).
+msgid "Expected available in {wait} seconds."
+msgstr "متوقع التوفر خلال {wait} ثانية."
+
+msgid "Expected available in {wait} second."
+msgid_plural "Expected available in {wait} seconds."
+msgstr[0] "متوقع التوفر خلال {wait} ثانية."
+msgstr[1] "متوقع التوفر خلال {wait} ثانية."
+msgstr[2] "متوقع التوفر خلال {wait} ثانيتين."
+msgstr[3] "متوقع التوفر خلال {wait} ثوانٍ."
+msgstr[4] "متوقع التوفر خلال {wait} ثانية."
+msgstr[5] "متوقع التوفر خلال {wait} ثانية."
+
+# ── Notification templates (rendered in the reader's language) ──
+
+msgid "%(actor)s submitted \"%(title)s\" for approval."
+msgstr "قدّم %(actor)s الطلب «%(title)s» للاعتماد."
+
+msgid "Your request \"%(title)s\" was approved."
+msgstr "تم اعتماد طلبك «%(title)s»."
+
+msgid "Your request \"%(title)s\" was rejected."
+msgstr "تم رفض طلبك «%(title)s»."
+
+msgid "Your request \"%(title)s\" was returned."
+msgstr "أُعيد طلبك «%(title)s»."
+
+msgid "%(actor)s submitted a timesheet entry for %(date)s."
+msgstr "قدّم %(actor)s إدخال وقت ليوم %(date)s."
+
+msgid "%(actor)s submitted %(count)d timesheet entry for review."
+msgid_plural "%(actor)s submitted %(count)d timesheet entries for review."
+msgstr[0] "قدّم %(actor)s %(count)d إدخال وقت للمراجعة."
+msgstr[1] "قدّم %(actor)s %(count)d إدخال وقت للمراجعة."
+msgstr[2] "قدّم %(actor)s %(count)d إدخالَي وقت للمراجعة."
+msgstr[3] "قدّم %(actor)s %(count)d إدخالات وقت للمراجعة."
+msgstr[4] "قدّم %(actor)s %(count)d إدخال وقت للمراجعة."
+msgstr[5] "قدّم %(actor)s %(count)d إدخال وقت للمراجعة."
+
+msgid "Your timesheet entry for %(date)s was approved."
+msgstr "تم اعتماد إدخال وقتك ليوم %(date)s."
+
+msgid "Your timesheet entry for %(date)s was returned."
+msgstr "أُعيد إدخال وقتك ليوم %(date)s."

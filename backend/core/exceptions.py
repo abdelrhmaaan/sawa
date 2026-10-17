@@ -1,5 +1,6 @@
 import logging
 
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
@@ -19,6 +20,6 @@ def safe_exception_handler(exc, context):
         return response
     logger.exception("Unhandled API error", exc_info=exc)
     return Response(
-        {"detail": "Internal server error"},
+        {"detail": _("Internal server error")},
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )

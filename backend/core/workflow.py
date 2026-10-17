@@ -3,6 +3,9 @@ used by employee_requests and timesheets (specs 003/004, docs/api.md)."""
 
 from django.db import transaction
 from django.db.models import Q
+from django.utils import translation
+from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from rest_framework.exceptions import ValidationError
 
 
@@ -41,18 +44,38 @@ def pending_for(qs, user):
     return qs.none()
 
 
-def notify(user, message, link=""):
-    """Create a Notification for `user` (spec 005 US2).
+def status_label(value):
+    """Translate a status value for embedding in a message.
 
-    Intended to be called inside the same transaction as the transition
-    that triggered it. No-op for a missing recipient.
+    `pgettext` keeps the English word lowercase in sentences while the
+    Arabic catalog can return the glossary label (spec 006).
+    """
+    return pgettext("status", value)
+
+
+def notify(user, kind, params, link=""):
+    """Create a Notification for `user` (spec 005 US2 / 006 US3).
+
+    `message` stores the English rendering; `kind` + `params` drive the
+    reader-language rendering at read time. Intended to be called inside
+    the same transaction as the transition that triggered it. No-op for
+    a missing recipient.
     """
     if user is None:
         return None
     from core.models import Notification
+    from core.notifications import KINDS, render
 
+    if kind not in KINDS:
+        raise ValueError(f"unknown notification kind: {kind}")
+    with translation.override("en"):
+        message = render(kind, params, "")
     return Notification.objects.create(
-        user=user, message=message[:300], link=link or ""
+        user=user,
+        kind=kind,
+        params=params,
+        message=message[:300],
+        link=link or "",
     )
 
 
@@ -92,10 +115,13 @@ def transition(
         if locked.status not in allowed_from:
             raise ValidationError(
                 {
-                    "detail": (
-                        f"Cannot change status from "
-                        f"'{locked.status}' to '{to_status}'."
+                    "detail": _(
+                        "Cannot change status from '%(from)s' to '%(to)s'."
                     )
+                    % {
+                        "from": status_label(locked.status),
+                        "to": status_label(to_status),
+                    }
                 }
             )
         from_status = locked.status

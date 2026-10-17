@@ -5,14 +5,15 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy as _
 
 
 class TimesheetEntry(models.Model):
     class Status(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        SUBMITTED = "submitted", "Submitted"
-        APPROVED = "approved", "Approved"
-        RETURNED = "returned", "Returned"
+        DRAFT = "draft", _("Draft")
+        SUBMITTED = "submitted", _("Submitted")
+        APPROVED = "approved", _("Approved")
+        RETURNED = "returned", _("Returned")
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -41,9 +42,9 @@ class TimesheetEntry(models.Model):
     def clean(self):
         errors = {}
         if self.start_time and self.end_time and self.end_time <= self.start_time:
-            errors["end_time"] = "End time must be after start time."
+            errors["end_time"] = gettext("End time must be after start time.")
         if self.date and self.date > timezone.localdate():
-            errors["date"] = "Date cannot be in the future."
+            errors["date"] = gettext("Date cannot be in the future.")
         if self.date and self.start_time and self.end_time and self.owner_id:
             overlap = (
                 TimesheetEntry.objects.filter(
@@ -56,7 +57,7 @@ class TimesheetEntry(models.Model):
                 .exists()
             )
             if overlap:
-                errors["start_time"] = (
+                errors["start_time"] = gettext(
                     "This entry overlaps another entry on the same date."
                 )
         if errors:

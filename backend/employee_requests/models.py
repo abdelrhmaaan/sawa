@@ -1,21 +1,22 @@
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Request(models.Model):
     class Type(models.TextChoices):
-        LEAVE = "leave", "Leave"
-        EQUIPMENT = "equipment", "Equipment"
-        WFH = "wfh", "Work from home"
-        HR_SERVICE = "hr_service", "HR service"
-        GENERAL = "general", "General"
+        LEAVE = "leave", _("Leave")
+        EQUIPMENT = "equipment", _("Equipment")
+        WFH = "wfh", _("Work from home")
+        HR_SERVICE = "hr_service", _("HR service")
+        GENERAL = "general", _("General")
 
     class Status(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        SUBMITTED = "submitted", "Submitted"
-        APPROVED = "approved", "Approved"
-        REJECTED = "rejected", "Rejected"
-        RETURNED = "returned", "Returned"
+        DRAFT = "draft", _("Draft")
+        SUBMITTED = "submitted", _("Submitted")
+        APPROVED = "approved", _("Approved")
+        REJECTED = "rejected", _("Rejected")
+        RETURNED = "returned", _("Returned")
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="requests"
