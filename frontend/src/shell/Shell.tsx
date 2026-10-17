@@ -295,7 +295,7 @@ export function Shell({ user, onLogout, pageTitle, topbarActions, children }: Sh
   const items = navConfig[user.role];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-page font-sans">
+    <div className="flex h-screen overflow-hidden bg-page">
       {/* ── Desktop sidebar ── */}
       <aside
         className={cn(
