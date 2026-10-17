@@ -2,9 +2,25 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, viewsets
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User
-from .serializers import MeSerializer, UserSerializer
+from .serializers import (
+    EmailTokenObtainPairSerializer,
+    MeSerializer,
+    UserSerializer,
+)
+from .throttles import LoginEmailThrottle, LoginIPThrottle
+
+
+@extend_schema(tags=["auth"])
+class LoginView(TokenObtainPairView):
+    """Email+password → JWT pair. Rate-limited per email and per client IP
+    to blunt credential guessing; token refresh is deliberately not
+    throttled (it already requires a valid refresh token)."""
+
+    serializer_class = EmailTokenObtainPairSerializer
+    throttle_classes = [LoginIPThrottle, LoginEmailThrottle]
 
 
 @extend_schema(tags=["me"])

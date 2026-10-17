@@ -3,13 +3,10 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
-from accounts.serializers import (
-    ActiveUserTokenRefreshSerializer,
-    EmailTokenObtainPairSerializer,
-)
-from accounts.views import MeView, UserViewSet
+from accounts.serializers import ActiveUserTokenRefreshSerializer
+from accounts.views import LoginView, MeView, UserViewSet
 from core.views import DashboardView, NotificationViewSet
 from employee_requests.urls import router as requests_router
 from timesheets.urls import router as timesheets_router
@@ -34,7 +31,7 @@ urlpatterns = [
     ),
     path(
         "api/auth/token/",
-        TokenObtainPairView.as_view(serializer_class=EmailTokenObtainPairSerializer),
+        LoginView.as_view(),
         name="token_obtain_pair",
     ),
     path(

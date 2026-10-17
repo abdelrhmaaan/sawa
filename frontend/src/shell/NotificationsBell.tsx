@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import {
   listNotifications,
@@ -8,6 +8,8 @@ import {
 } from "@/lib/api";
 import type { AppNotification } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+const POLL_MS = 30_000;
 
 function formatWhen(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -24,6 +26,7 @@ function formatWhen(iso: string) {
  */
 export function NotificationsBell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [open, setOpen] = useState(false);
@@ -32,18 +35,31 @@ export function NotificationsBell() {
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  // Initial badge count — one cheap request on mount.
-  useEffect(() => {
-    let cancelled = false;
+  const refreshCount = useCallback(() => {
     listNotifications({ page_size: 1 })
-      .then((res) => {
-        if (!cancelled) setUnread(res.unread_count);
-      })
+      .then((res) => setUnread(res.unread_count))
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  // Badge count: on mount and on every page change.
+  useEffect(() => {
+    refreshCount();
+  }, [refreshCount, location.pathname]);
+
+  // Keep the badge fresh: poll while the tab is visible, and refresh on return.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refreshCount();
+    };
+    const id = window.setInterval(onVisible, POLL_MS);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [refreshCount]);
 
   // Close on click-outside / Escape.
   useEffect(() => {

@@ -108,6 +108,15 @@
 - [x] T-002-37 Run full `pytest` green; end-to-end smoke: `docker compose up` → `seed_demo` → login as each role → `/api/docs/` lists endpoints
 - [x] T-002-38 Log AI usage for this feature in `docs/ai-usage.md`
 
+## Phase 7: Security Hardening (post-review, 2026-10-17)
+
+**Goal**: close constitution VI gaps found in review — unlimited login attempts and no HTTPS enforcement.
+
+- [x] T-002-39 [P] Tests in `backend/accounts/tests/test_login_throttle.py`: 6th attempt per email → 429 (even with correct password), email normalized, other account unaffected, 21st attempt per IP → 429, refresh not throttled; autouse cache clear in `backend/conftest.py`
+- [x] T-002-40 Login throttling: `LoginEmailThrottle` (5/min) + `LoginIPThrottle` (20/min) in `backend/accounts/throttles.py`, `LoginView` in `backend/accounts/views.py`, routed in `backend/config/urls.py`, rates in `DEFAULT_THROTTLE_RATES` (env-overridable)
+- [x] T-002-41 HTTPS hardening when `DEBUG=False` in `backend/config/settings.py`: `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_HSTS_SECONDS` (30 days); tests in `backend/accounts/tests/test_settings.py`
+- [x] T-002-42 [P] Docs: `backend/.env.example`, `docs/api.md` (429 on token endpoint), `docs/architecture.md` (env vars), `docs/ai-usage.md`
+
 ---
 
 ## Dependencies & Execution Order

@@ -29,6 +29,14 @@ SECURE_PROXY_SSL_HEADER = env(
     "SECURE_PROXY_SSL_HEADER", default=None, cast=lambda v: (v, "https")
 )
 
+# HTTPS hardening: on in production, off in local dev (DEBUG=True).
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=not DEBUG)
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=not DEBUG)
+SECURE_HSTS_SECONDS = env.int(
+    "SECURE_HSTS_SECONDS", default=0 if DEBUG else 60 * 60 * 24 * 30
+)
+
 SEED_DEMO_PASSWORD = env("SEED_DEMO_PASSWORD", default=None)
 
 INSTALLED_APPS = [
@@ -120,6 +128,10 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "core.exceptions.safe_exception_handler",
+    "DEFAULT_THROTTLE_RATES": {
+        "login_email": env("LOGIN_EMAIL_THROTTLE_RATE", default="5/min"),
+        "login_ip": env("LOGIN_IP_THROTTLE_RATE", default="20/min"),
+    },
 }
 
 SIMPLE_JWT = {

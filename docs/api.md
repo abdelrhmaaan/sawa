@@ -29,7 +29,7 @@ Source of truth: `specs/002-authentication-rbac/` · `003-employee-requests/` ·
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/auth/token/` | email+password → `{access, refresh}`; wrong/unknown/inactive → 401 generic |
+| POST | `/api/auth/token/` | email+password → `{access, refresh}`; wrong/unknown/inactive → 401 generic; throttled → 429 after 5/min per email or 20/min per IP |
 | POST | `/api/auth/token/refresh/` | rotated pair; deactivated user → 401 |
 | GET/PATCH | `/api/me/` | PATCH: only `first_name`/`last_name` writable; role/email/department/manager ignored (200) |
 | GET | `/api/users/` | scoped list; pagination applies |

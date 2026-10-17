@@ -29,6 +29,14 @@ def _fast_password_hasher(settings):
     settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    # Throttle counters (LocMemCache) must not leak between tests.
+    from django.core.cache import cache
+
+    cache.clear()
+
+
 @pytest.fixture
 def api_client():
     return APIClient()

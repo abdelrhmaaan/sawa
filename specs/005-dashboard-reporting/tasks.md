@@ -70,6 +70,13 @@
 - [x] T-005-18 Run full `pytest` green; smoke: each role's dashboard on seeded data
 - [x] T-005-19 Log AI usage for this feature in `docs/ai-usage.md`
 
+## Phase 6: Notification Badge Fix (post-review, 2026-10-17)
+
+**Goal**: unread badge was fetched only once on mount, so new notifications appeared only after a bell click or full reload.
+
+- [x] T-005-20 [US2] `frontend/src/shell/NotificationsBell.tsx`: refresh unread count on route change, every 30s while the tab is visible, and on tab focus/visibility change
+- [x] T-005-21 [US2] Verify with two browsers (Playwright): employee submits → approver's badge +1 without reload (≈30s poll) and immediately on route change
+
 ---
 
 ## Dependencies & Execution Order

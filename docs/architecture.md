@@ -77,9 +77,15 @@ State machines: `draft → submitted → approved | rejected | returned` (reques
 | `CORS_ALLOWED_ORIGINS` | api | frontend origin — only it may call the API cross-origin |
 | `CSRF_TRUSTED_ORIGINS` | api | api + frontend origins — needed for `/admin/` login over HTTPS |
 | `SECURE_PROXY_SSL_HEADER` | api | `HTTP_X_FORWARDED_PROTO` — Render terminates TLS upstream |
+| `SECURE_SSL_REDIRECT` | api | optional override — defaults on when `DEBUG=False` (301 http → https) |
+| `SECURE_HSTS_SECONDS` | api | optional override — defaults to 30 days when `DEBUG=False`, `0` in dev |
+| `LOGIN_EMAIL_THROTTLE_RATE` | api | optional — login attempts per account email (default `5/min`) |
+| `LOGIN_IP_THROTTLE_RATE` | api | optional — login attempts per client IP (default `20/min`) |
 | `SEED_DEMO_PASSWORD` | api | `sync: false` → entered once at blueprint creation; consumed only by `seed_demo` |
 | `VITE_API_URL` | frontend | baked into the static bundle at build time |
 | `PYTHON_VERSION` | api | `3.12` |
+
+HTTPS redirect, secure session/CSRF cookies, and HSTS turn on automatically when `DEBUG=False` (no env vars needed); `SESSION_COOKIE_SECURE`/`CSRF_COOKIE_SECURE` follow the same rule.
 
 **Build/runtime behavior**: migrations run in `buildCommand`, so every deploy brings the DB to current schema. `seed_demo` runs **once manually** after first deploy (idempotent — safe to re-run).
 
