@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
@@ -11,6 +12,7 @@ from core.serializers import DecisionSerializer
 from core.workflow import (
     can_decide,
     notify,
+    status_label as _status_label,
     submission_recipients,
     transition,
     visible_to,
@@ -98,7 +100,12 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
         self._require_owner(obj)
         if obj.status not in EDITABLE:
             raise ValidationError(
-                {"detail": f"Cannot edit a timesheet entry in status '{obj.status}'."}
+                {
+                    "detail": _(
+                        "Cannot edit a timesheet entry in status '%(status)s'."
+                    )
+                    % {"status": _status_label(obj.status)}
+                }
             )
         return super().update(request, *args, **kwargs)
 
@@ -107,7 +114,7 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
         self._require_owner(obj)
         if obj.status != TimesheetEntry.Status.DRAFT:
             raise ValidationError(
-                {"detail": "Only draft timesheet entries can be deleted."}
+                {"detail": _("Only draft timesheet entries can be deleted.")}
             )
         return super().destroy(request, *args, **kwargs)
 
@@ -119,7 +126,7 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
         body.is_valid(raise_exception=True)
         comment = body.validated_data.get("comment", "").strip()
         if comment_required and not comment:
-            raise ValidationError({"comment": "This field is required."})
+            raise ValidationError({"comment": _("This field is required.")})
         with transaction.atomic():
             obj = transition(
                 obj,
@@ -133,7 +140,8 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
             )
             notify(
                 obj.owner,
-                f"Your timesheet entry for {obj.date} was {to_status}.",
+                f"timesheet_{to_status}",
+                {"date": str(obj.date)},
                 link="/timesheets",
             )
         return self._detail_response(obj)
@@ -156,7 +164,8 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
             for recipient in submission_recipients(obj.owner):
                 notify(
                     recipient,
-                    f"{obj.owner.full_name} submitted a timesheet entry for {obj.date}.",
+                    "timesheet_submitted",
+                    {"actor": obj.owner.full_name, "date": str(obj.date)},
                     link="/timesheets/review",
                 )
         return self._detail_response(obj)
@@ -180,7 +189,7 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
             or not ids
             or any(not isinstance(i, int) or isinstance(i, bool) for i in ids)
         ):
-            raise ValidationError({"ids": "A non-empty list of integer ids is required."})
+            raise ValidationError({"ids": _("A non-empty list of integer ids is required.")})
         unique_ids = set(ids)
         with transaction.atomic():
             rows = list(
@@ -192,7 +201,7 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
             )
             if len(rows) != len(unique_ids):
                 raise ValidationError(
-                    {"ids": "Some entries are missing, not yours, or not submittable."}
+                    {"ids": _("Some entries are missing, not yours, or not submittable.")}
                 )
             now = timezone.now()
             for row in rows:
@@ -208,8 +217,8 @@ class TimesheetEntryViewSet(viewsets.ModelViewSet):
             for recipient in submission_recipients(request.user):
                 notify(
                     recipient,
-                    f"{request.user.full_name} submitted {len(rows)} timesheet "
-                    f"{'entry' if len(rows) == 1 else 'entries'} for review.",
+                    "timesheet_bulk_submitted",
+                    {"actor": request.user.full_name, "count": len(rows)},
                     link="/timesheets/review",
                 )
         return Response({"submitted": len(rows)})

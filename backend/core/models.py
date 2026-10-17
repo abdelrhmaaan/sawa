@@ -15,6 +15,10 @@ class Notification(models.Model):
         related_name="notifications",
     )
     message = models.CharField(max_length=300)
+    # Event registry key ("" on rows written before feature 006) and the
+    # values substituted into its template at read time (US3).
+    kind = models.CharField(max_length=40, blank=True, default="")
+    params = models.JSONField(default=dict, blank=True)
     link = models.CharField(max_length=200, blank=True)  # frontend route
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

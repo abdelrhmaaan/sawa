@@ -9,7 +9,7 @@ import { Button } from "@/components/ui";
  * The label is hidden below `sm` unless `fullLabel` is set (login page),
  * keeping room for the topbar title on narrow screens.
  */
-export function LanguageSwitch({ fullLabel }: { fullLabel?: boolean }) {
+export function LanguageSwitch({ fullLabel, className }: { fullLabel?: boolean; className?: string }) {
   const { i18n, t } = useTranslation();
   const toAr = i18n.resolvedLanguage !== "ar";
   const target = toAr ? "العربية" : "English";
@@ -20,6 +20,7 @@ export function LanguageSwitch({ fullLabel }: { fullLabel?: boolean }) {
       iconLeft={<Languages size={14} />}
       aria-label={t("common.switchLanguage")}
       title={target}
+      className={className}
       onClick={() => i18n.changeLanguage(toAr ? "ar" : "en")}
     >
       <span lang={toAr ? "ar" : "en"} className={fullLabel ? undefined : "hidden sm:inline"}>

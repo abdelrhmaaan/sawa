@@ -35,8 +35,14 @@ applyDir(i18n.resolvedLanguage);
 i18n.on("languageChanged", applyDir);
 
 export type EnResources = typeof en;
+// Only leaf (string) entries are valid keys — some groups nest deeper.
 export type I18nKey = {
-  [S in keyof EnResources]: `${S & string}.${keyof EnResources[S] & string}`;
+  [S in keyof EnResources]: `${S & string}.${{
+    [K in keyof EnResources[S]]: EnResources[S][K] extends string
+      ? K & string
+      : never;
+  }[keyof EnResources[S]] &
+    string}`;
 }[keyof EnResources];
 
 export default i18n;

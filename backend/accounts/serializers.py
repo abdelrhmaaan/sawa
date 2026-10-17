@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
@@ -29,7 +30,7 @@ class ActiveUserTokenRefreshSerializer(TokenRefreshSerializer):
         refresh = RefreshToken(attrs["refresh"])
         user = User.objects.filter(pk=refresh.get("user_id")).first()
         if user is None or not user.is_active:
-            raise AuthenticationFailed("No active account found")
+            raise AuthenticationFailed(_("No active account found"))
         return super().validate(attrs)
 
 

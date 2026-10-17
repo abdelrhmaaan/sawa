@@ -94,6 +94,10 @@ HTTPS redirect, secure session/CSRF cookies, and HSTS turn on automatically when
 - Cold starts: free web services sleep after ~15 min idle; first request takes ~50 s.
 - Free Postgres expires after 30 days. On reset the DB comes back empty → `migrate` on next deploy rebuilds schema, `seed_demo` restores the demo org. No persistent data is needed.
 
+## Localization (feature 006)
+
+English is the default UI language; Arabic (RTL) is switchable per user in the frontend and persisted in `localStorage` (`sawa.lang`). The frontend bundles JSON catalogs (`src/i18n/locales/{en,ar}.json`) through i18next and sends `Accept-Language` on every API call. The backend translates messages via Django `LocaleMiddleware` (after `SessionMiddleware`) using `backend/locale/<lang>/LC_MESSAGES/django.po` — compiled to a **committed `.mo`** by `manage.py compile_catalog` (polib; no gettext binary needed). Notifications store an English `message` plus a `kind`/`params` pair and are re-rendered in the reader's language when listed (`core.notifications`).
+
 ## Testing strategy
 
 | Layer | Tool | Coverage |

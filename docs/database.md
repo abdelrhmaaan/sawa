@@ -74,7 +74,9 @@ erDiagram
     Notification {
         int id PK
         int user_id FK "CASCADE"
-        string message "max 300"
+        string message "max 300, English fallback"
+        string kind "event registry key, blank on old rows"
+        json params "template values"
         string link "frontend route"
         bool is_read "default false"
         datetime created_at
@@ -133,7 +135,9 @@ erDiagram
 | Field | Type | Constraints |
 |---|---|---|
 | user | FK→User, CASCADE | recipient only |
-| message | CharField(300) | |
+| message | CharField(300) | stored English rendering; also the fallback when `kind` is blank/unknown |
+| kind | CharField(40), blank, default `""` | key into the `core.notifications.KINDS` template registry (006 US3); `""` on rows written before 006 |
+| params | JSONField, default `{}` | values substituted into the template at read time — never treated as templates themselves |
 | link | CharField(200) | frontend route |
 | is_read | bool, default False | |
 | created_at | auto_add | ordering: unread first, then newest |
@@ -172,4 +176,5 @@ stateDiagram-v2
 
 | Date | Change | Spec ref |
 |---|---|---|
+| 2026-10-17 | `core/0002`: `Notification.kind` + `Notification.params` added (feature 006 US3 — notifications rendered in the reader's language; `message` kept as English fallback). | specs/006-arabic-localization/data-model.md |
 | 2026-10-02 | Initial design: `User`, `Request`, `RequestStatusHistory`, `TimesheetEntry`, `TimesheetStatusHistory`, `Notification` (optional). `manager` FK = SET_NULL; request types = TextChoices; hours server-computed; status per timesheet entry (no weekly header). | specs 002–005, `docs/plan.md` §0.2 |

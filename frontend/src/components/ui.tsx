@@ -10,6 +10,7 @@ import {
   type ReactNode,
   type ChangeEvent,
 } from "react";
+import { Link, type LinkProps } from "react-router";
 import { Loader2, Upload, Check, ChevronDown, AlertCircle, CheckCircle, Info, AlertTriangle, X, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,8 @@ import { cn } from "@/lib/utils";
 // BUTTON
 // ─────────────────────────────────────────────────────────────────────────────
 
-type ButtonVariant = "primary" | "secondary" | "tertiary" | "destructive";
-type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "tertiary" | "destructive";
+export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -50,12 +51,21 @@ const buttonSizes: Record<ButtonSize, string> = {
   lg: "h-11 px-5 text-sm",
 };
 
+export function buttonClass(
+  variant: ButtonVariant = "primary",
+  size: ButtonSize = "md",
+  fullWidth?: boolean,
+  className?: string
+) {
+  return cn(buttonBase, buttonVariants[variant], buttonSizes[size], fullWidth && "w-full", className);
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "md", loading, iconLeft, iconRight, fullWidth, className, children, disabled, ...props }, ref) => (
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={cn(buttonBase, buttonVariants[variant], buttonSizes[size], fullWidth && "w-full", className)}
+      className={buttonClass(variant, size, fullWidth, className)}
       {...props}
     >
       {loading ? <Loader2 className="animate-spin" size={size === "sm" ? 13 : size === "lg" ? 17 : 15} /> : iconLeft}
@@ -65,6 +75,26 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   )
 );
 Button.displayName = "Button";
+
+// Router link rendered with the same classes as Button (for navigation CTAs).
+interface ButtonLinkProps extends LinkProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+}
+
+export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
+  ({ to, variant, size, fullWidth, iconLeft, iconRight, className, children, ...rest }, ref) => (
+    <Link ref={ref} to={to} className={buttonClass(variant, size, fullWidth, className)} {...rest}>
+      {iconLeft}
+      {children}
+      {iconRight}
+    </Link>
+  )
+);
+ButtonLink.displayName = "ButtonLink";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ICON BUTTON

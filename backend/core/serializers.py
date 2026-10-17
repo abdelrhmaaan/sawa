@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import Notification
+from .notifications import render
 
 USER_REF_SCHEMA = {
     "type": "object",
@@ -50,7 +51,14 @@ class DecisionSerializer(serializers.Serializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    # Rendered in the request's active language when `kind` is known;
+    # older rows (kind="") return their stored English `message`.
+    message = serializers.SerializerMethodField()
+
     class Meta:
         model = Notification
         fields = ["id", "message", "link", "is_read", "created_at"]
         read_only_fields = fields
+
+    def get_message(self, obj):
+        return render(obj.kind, obj.params, obj.message)

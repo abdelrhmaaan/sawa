@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -36,9 +37,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
-        EMPLOYEE = "employee", "Employee"
-        MANAGER = "manager", "Manager"
-        HR = "hr", "HR"
+        EMPLOYEE = "employee", _("Employee")
+        MANAGER = "manager", _("Manager")
+        HR = "hr", _("HR")
 
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150)
@@ -75,13 +76,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.manager_id is None:
             return
         if self.pk is not None and self.manager_id == self.pk:
-            raise ValidationError({"manager": "A user cannot be their own manager."})
+            raise ValidationError({"manager": _("A user cannot be their own manager.")})
         visited = set()
         node_id = self.manager_id
         while node_id is not None:
             if node_id in visited or (self.pk is not None and node_id == self.pk):
                 raise ValidationError(
-                    {"manager": "This assignment would create a manager cycle."}
+                    {"manager": _("This assignment would create a manager cycle.")}
                 )
             visited.add(node_id)
             node_id = (

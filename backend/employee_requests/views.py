@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -10,6 +11,7 @@ from core.serializers import DecisionSerializer
 from core.workflow import (
     can_decide,
     notify,
+    status_label as _status_label,
     submission_recipients,
     transition,
     visible_to,
@@ -88,7 +90,12 @@ class RequestViewSet(viewsets.ModelViewSet):
         self._require_owner(obj)
         if obj.status not in EDITABLE:
             raise ValidationError(
-                {"detail": f"Cannot edit a request in status '{obj.status}'."}
+                {
+                    "detail": _(
+                        "Cannot edit a request in status '%(status)s'."
+                    )
+                    % {"status": _status_label(obj.status)}
+                }
             )
         return super().update(request, *args, **kwargs)
 
@@ -97,7 +104,7 @@ class RequestViewSet(viewsets.ModelViewSet):
         self._require_owner(obj)
         if obj.status != Request.Status.DRAFT:
             raise ValidationError(
-                {"detail": "Only draft requests can be deleted."}
+                {"detail": _("Only draft requests can be deleted.")}
             )
         return super().destroy(request, *args, **kwargs)
 
@@ -109,7 +116,7 @@ class RequestViewSet(viewsets.ModelViewSet):
         body.is_valid(raise_exception=True)
         comment = body.validated_data.get("comment", "").strip()
         if comment_required and not comment:
-            raise ValidationError({"comment": "This field is required."})
+            raise ValidationError({"comment": _("This field is required.")})
         timestamps = {}
         if to_status in (Request.Status.APPROVED, Request.Status.REJECTED):
             timestamps["decided_at"] = timezone.now()
@@ -126,7 +133,8 @@ class RequestViewSet(viewsets.ModelViewSet):
             )
             notify(
                 obj.owner,
-                f'Your request "{obj.title}" was {to_status}.',
+                f"request_{to_status}",
+                {"title": obj.title},
                 link=f"/requests/{obj.pk}",
             )
         return self._detail_response(obj)
@@ -149,7 +157,8 @@ class RequestViewSet(viewsets.ModelViewSet):
             for recipient in submission_recipients(obj.owner):
                 notify(
                     recipient,
-                    f'{obj.owner.full_name} submitted "{obj.title}" for approval.',
+                    "request_submitted",
+                    {"actor": obj.owner.full_name, "title": obj.title},
                     link=f"/requests/{obj.pk}",
                 )
         return self._detail_response(obj)
